@@ -1,16 +1,3 @@
-(*
-2) use the stack if needed
-3) fix function calls (save/restore t0-t(i-one))
-4) done
-5) depends on semantic
-6) source to source transformation:
-   AST -> AST (imp -> imp)
-   the goal is to simplify everything that can be simplify
-
-   ex: Add(Cst 2, Cst 3) -> Cst 3
-
-*)
-
 (**
    Simple translation from IMP to MIPS.
 
@@ -270,6 +257,20 @@ let tr_function fdef =
      sequence of MIPS instructions that evaluates [e] and put the
      obtained value in register $t0.
    *)
+
+   (*
+   6) source to source transformation:
+      AST -> AST (imp -> imp)
+      the goal is to simplify everything that can be simplify
+
+      ex: Add(Cst 2, Cst 3) -> Cst 5
+
+      Cases that could be simplyfied:
+         - operation on constants
+         - ?
+
+   *)
+
   let regs = [|t0; t1; t2; t3; t4; t5; t6; t7; t8; t9|] in
 
   let rec nb_reg_expr = function
@@ -296,7 +297,7 @@ in
            read at the corresponding address. *)
         | None -> la regs.(i) id @@ lw regs.(i) 0 regs.(i)
       end
-               
+   
     (* Binary operation: use the stack to store intermediate values waiting
        to be used. *)
     | Binop(bop, e1, e2) ->
@@ -318,6 +319,11 @@ in
        Before jumping to the function itself, evaluate all parameters and put
        their values on the stack, from last to first. *)
     | Call(f, params) ->
+      (* try to save registers before call *)
+       (* Array.iteri
+         (fun k a -> if k < i then push a)
+         regs
+       in   *)
        (* Evaluate the arguments and pass them on the stack. *)
        let params_code =
          List.fold_right
@@ -352,6 +358,7 @@ in
           stack. Incrementing $sp is enough (the values are not destroyed, but
           are not reachable anymore). *)
        @@ addi sp sp (4 * List.length params)
+       (* @@ Array.iteri (fun k a -> if k < i then pop a) regs *)
 
   in
 

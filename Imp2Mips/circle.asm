@@ -69,14 +69,14 @@ __main_1:
 	syscall
 	li $t0, 1
 	lw $t1, -8($fp)
-	add $t0, $t0, $t1
+	add $t0, $t1, $t0
 	sw $t0, -8($fp)
 __main_0:
 	li $t0, 1
 	lw $t1, 4($fp)
-	add $t0, $t0, $t1
+	add $t0, $t1, $t0
 	lw $t1, -8($fp)
-	slt $t0, $t0, $t1
+	slt $t0, $t1, $t0
 	bnez $t0, __main_1
 	li $t0, 0
 	addi $sp, $fp, -4
@@ -98,15 +98,15 @@ affiche_ligne:
 __affiche_ligne_1:
 	lw $t0, 8($fp)
 	lw $t1, 8($fp)
-	mul $t0, $t0, $t1
+	mul $t0, $t1, $t0
 	lw $t1, -8($fp)
 	lw $t2, -8($fp)
-	mul $t1, $t1, $t2
+	mul $t1, $t2, $t1
 	lw $t2, 4($fp)
 	lw $t3, 4($fp)
-	mul $t2, $t2, $t3
-	add $t1, $t1, $t2
-	slt $t0, $t0, $t1
+	mul $t2, $t3, $t2
+	add $t1, $t2, $t1
+	slt $t0, $t1, $t0
 	bnez $t0, __affiche_ligne_2
 	li $t0, 35
 	move $a0, $t0
@@ -126,14 +126,14 @@ __affiche_ligne_3:
 	syscall
 	li $t0, 1
 	lw $t1, -8($fp)
-	add $t0, $t0, $t1
+	add $t0, $t1, $t0
 	sw $t0, -8($fp)
 __affiche_ligne_0:
 	li $t0, 1
 	lw $t1, 8($fp)
-	add $t0, $t0, $t1
+	add $t0, $t1, $t0
 	lw $t1, -8($fp)
-	slt $t0, $t0, $t1
+	slt $t0, $t1, $t0
 	bnez $t0, __affiche_ligne_1
 	li $t0, 0
 	addi $sp, $fp, -4

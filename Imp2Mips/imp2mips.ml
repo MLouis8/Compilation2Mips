@@ -291,7 +291,7 @@ let tr_function fdef =
          @@ tr_expr e1 (i+1)
          (* Apply the binary operation to $ti (the value of [e1]) and $t(i+1) (the
             value of [e2]), and put the result in $ti. *)
-         @@ op t.(i) t.(i) t.(i+1)
+         @@ op t.(i) t.(i+1) t.(i)
        else
          push t.(i-1)
          (* Evaluate [e2] *)
@@ -300,7 +300,7 @@ let tr_function fdef =
          @@ tr_expr e1 (i)
          (* Apply the binary operation to $t(i-1) (the value of [e1]) and $t(i) (the
             value of [e2]), and put the result in $t(i-1). *)
-         @@ op t.(i-1) t.(i-1) t.(i)
+         @@ op t.(i) t.(i) t.(i-1)
          @@ pop t.(i-1)
     (* Function call.
        Before jumping to the function itself, evaluate all parameters and put

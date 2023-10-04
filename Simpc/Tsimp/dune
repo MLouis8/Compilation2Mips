@@ -1,0 +1,11 @@
+(ocamllex
+ (modules simplexer))
+(menhir
+ (modules simpparser)
+ (flags --explain --dump)
+ (infer true))
+(executable
+ (name simpc)
+ (promote (until-clean))
+ (flags ()))
+(env (dev (flags (:standard -w -50))))

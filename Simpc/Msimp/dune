@@ -1,0 +1,11 @@
+(ocamllex
+ (modules msimplexer))
+(menhir
+ (modules msimpparser)
+ (flags --explain --dump)
+ (infer true))
+(executable
+ (name msimpc)
+ (promote (until-clean))
+ (flags ()))
+(env (dev (flags (:standard -w -50))))

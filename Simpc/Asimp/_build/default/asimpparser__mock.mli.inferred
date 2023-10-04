@@ -1,0 +1,61 @@
+type token =
+    WHILE
+  | VAR
+  | TYP_VOID
+  | TYP_INT
+  | TYP_BOOL
+  | STRUCT
+  | STAR
+  | SET
+  | SEMI
+  | RPAR
+  | RETURN
+  | RBRACKET
+  | PUTCHAR
+  | PLUS
+  | NEW
+  | LT
+  | LPAR
+  | LBRACKET
+  | IF
+  | IDENT of string
+  | FUNCTION
+  | EOF
+  | END
+  | ELSE
+  | DOT
+  | CST of int
+  | COMMA
+  | BOOL of bool
+  | BEGIN
+val structs : Asimp.struct_def list ref
+val globals : (string * Asimp.typ) list ref
+val functions : unit Asimp.function_def list ref
+val menhir_begin_marker : int
+val xv_variable_decl : string * Asimp.typ
+val xv_typed_ident : string * Asimp.typ
+val xv_typ : Asimp.typ
+val xv_struct_def : Asimp.struct_def
+val xv_separated_nonempty_list_SEMI_typed_ident_ : (string * Asimp.typ) list
+val xv_separated_nonempty_list_COMMA_typed_ident_ : (string * Asimp.typ) list
+val xv_separated_nonempty_list_COMMA_expression_ : unit Asimp.expression list
+val xv_separated_list_SEMI_typed_ident_ : (string * Asimp.typ) list
+val xv_separated_list_COMMA_typed_ident_ : (string * Asimp.typ) list
+val xv_separated_list_COMMA_expression_ : unit Asimp.expression list
+val xv_program : unit Asimp.program
+val xv_mem_access : unit Asimp.mem
+val xv_loption_separated_nonempty_list_SEMI_typed_ident__ :
+  (string * Asimp.typ) list
+val xv_loption_separated_nonempty_list_COMMA_typed_ident__ :
+  (string * Asimp.typ) list
+val xv_loption_separated_nonempty_list_COMMA_expression__ :
+  unit Asimp.expression list
+val xv_list_variable_decl_ : (string * Asimp.typ) list
+val xv_list_instruction_ : unit Asimp.sequence
+val xv_list_decl_ : unit list
+val xv_instruction : unit Asimp.instruction
+val xv_function_def : unit Asimp.function_def
+val xv_expression : unit Asimp.expression
+val xv_decl : unit
+val xv_binop : Asimp.binop
+val menhir_end_marker : int

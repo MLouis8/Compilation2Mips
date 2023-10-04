@@ -1,0 +1,19 @@
+struct pair { int x; int y }
+
+function void main() {
+  var pair p;
+  var pair q;
+  p = new pair;
+  p.x = 2;
+  p.y = 48;
+  putchar(p.y);
+  q = p;
+  q.y = 49;
+  putchar(p.y);
+  p = new pair;
+  p.y = 50;
+  putchar(p.y);
+  putchar(q.y);
+}
+
+// prints 0121

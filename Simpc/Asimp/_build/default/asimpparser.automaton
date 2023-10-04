@@ -1,0 +1,1494 @@
+State 0:
+## Known stack suffix:
+##
+## LR(1) items:
+program' -> . program [ # ]
+## Transitions:
+-- On error shift to state 1
+-- On VAR shift to state 2
+-- On STRUCT shift to state 14
+-- On FUNCTION shift to state 23
+-- On variable_decl shift to state 109
+-- On struct_def shift to state 110
+-- On program shift to state 111
+-- On list(decl) shift to state 112
+-- On function_def shift to state 114
+-- On decl shift to state 115
+## Reductions:
+-- On EOF
+--   reduce production list(decl) ->
+
+State 1:
+## Known stack suffix:
+## error
+## LR(1) items:
+program -> error . [ # ]
+## Transitions:
+## Reductions:
+-- On #
+--   reduce production program -> error
+
+State 2:
+## Known stack suffix:
+## VAR
+## LR(1) items:
+variable_decl -> VAR . typed_ident SEMI [ WHILE VAR STRUCT RETURN PUTCHAR NEW LPAR IF IDENT FUNCTION EOF END CST BOOL ]
+## Transitions:
+-- On TYP_VOID shift to state 3
+-- On TYP_INT shift to state 4
+-- On TYP_BOOL shift to state 5
+-- On LBRACKET shift to state 6
+-- On IDENT shift to state 7
+-- On typed_ident shift to state 10
+-- On typ shift to state 12
+## Reductions:
+
+State 3:
+## Known stack suffix:
+## TYP_VOID
+## LR(1) items:
+typ -> TYP_VOID . [ RBRACKET IDENT COMMA ]
+## Transitions:
+## Reductions:
+-- On RBRACKET IDENT COMMA
+--   reduce production typ -> TYP_VOID
+
+State 4:
+## Known stack suffix:
+## TYP_INT
+## LR(1) items:
+typ -> TYP_INT . [ RBRACKET IDENT COMMA ]
+## Transitions:
+## Reductions:
+-- On RBRACKET IDENT COMMA
+--   reduce production typ -> TYP_INT
+
+State 5:
+## Known stack suffix:
+## TYP_BOOL
+## LR(1) items:
+typ -> TYP_BOOL . [ RBRACKET IDENT COMMA ]
+## Transitions:
+## Reductions:
+-- On RBRACKET IDENT COMMA
+--   reduce production typ -> TYP_BOOL
+
+State 6:
+## Known stack suffix:
+## LBRACKET
+## LR(1) items:
+typ -> LBRACKET . typ RBRACKET [ RBRACKET IDENT COMMA ]
+## Transitions:
+-- On TYP_VOID shift to state 3
+-- On TYP_INT shift to state 4
+-- On TYP_BOOL shift to state 5
+-- On LBRACKET shift to state 6
+-- On IDENT shift to state 7
+-- On typ shift to state 8
+## Reductions:
+
+State 7:
+## Known stack suffix:
+## IDENT
+## LR(1) items:
+typ -> IDENT . [ RBRACKET IDENT COMMA ]
+## Transitions:
+## Reductions:
+-- On RBRACKET IDENT COMMA
+--   reduce production typ -> IDENT
+
+State 8:
+## Known stack suffix:
+## LBRACKET typ
+## LR(1) items:
+typ -> LBRACKET typ . RBRACKET [ RBRACKET IDENT COMMA ]
+## Transitions:
+-- On RBRACKET shift to state 9
+## Reductions:
+
+State 9:
+## Known stack suffix:
+## LBRACKET typ RBRACKET
+## LR(1) items:
+typ -> LBRACKET typ RBRACKET . [ RBRACKET IDENT COMMA ]
+## Transitions:
+## Reductions:
+-- On RBRACKET IDENT COMMA
+--   reduce production typ -> LBRACKET typ RBRACKET
+
+State 10:
+## Known stack suffix:
+## VAR typed_ident
+## LR(1) items:
+variable_decl -> VAR typed_ident . SEMI [ WHILE VAR STRUCT RETURN PUTCHAR NEW LPAR IF IDENT FUNCTION EOF END CST BOOL ]
+## Transitions:
+-- On SEMI shift to state 11
+## Reductions:
+
+State 11:
+## Known stack suffix:
+## VAR typed_ident SEMI
+## LR(1) items:
+variable_decl -> VAR typed_ident SEMI . [ WHILE VAR STRUCT RETURN PUTCHAR NEW LPAR IF IDENT FUNCTION EOF END CST BOOL ]
+## Transitions:
+## Reductions:
+-- On WHILE VAR STRUCT RETURN PUTCHAR NEW LPAR IF IDENT FUNCTION EOF END CST BOOL
+--   reduce production variable_decl -> VAR typed_ident SEMI
+
+State 12:
+## Known stack suffix:
+## typ
+## LR(1) items:
+typed_ident -> typ . IDENT [ SEMI RPAR END COMMA ]
+## Transitions:
+-- On IDENT shift to state 13
+## Reductions:
+
+State 13:
+## Known stack suffix:
+## typ IDENT
+## LR(1) items:
+typed_ident -> typ IDENT . [ SEMI RPAR END COMMA ]
+## Transitions:
+## Reductions:
+-- On SEMI RPAR END COMMA
+--   reduce production typed_ident -> typ IDENT
+
+State 14:
+## Known stack suffix:
+## STRUCT
+## LR(1) items:
+struct_def -> STRUCT . IDENT BEGIN loption(separated_nonempty_list(SEMI,typed_ident)) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On IDENT shift to state 15
+## Reductions:
+
+State 15:
+## Known stack suffix:
+## STRUCT IDENT
+## LR(1) items:
+struct_def -> STRUCT IDENT . BEGIN loption(separated_nonempty_list(SEMI,typed_ident)) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On BEGIN shift to state 16
+## Reductions:
+
+State 16:
+## Known stack suffix:
+## STRUCT IDENT BEGIN
+## LR(1) items:
+struct_def -> STRUCT IDENT BEGIN . loption(separated_nonempty_list(SEMI,typed_ident)) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On TYP_VOID shift to state 3
+-- On TYP_INT shift to state 4
+-- On TYP_BOOL shift to state 5
+-- On LBRACKET shift to state 6
+-- On IDENT shift to state 7
+-- On typed_ident shift to state 17
+-- On typ shift to state 12
+-- On separated_nonempty_list(SEMI,typed_ident) shift to state 20
+-- On loption(separated_nonempty_list(SEMI,typed_ident)) shift to state 21
+## Reductions:
+-- On END
+--   reduce production loption(separated_nonempty_list(SEMI,typed_ident)) ->
+
+State 17:
+## Known stack suffix:
+## typed_ident
+## LR(1) items:
+separated_nonempty_list(SEMI,typed_ident) -> typed_ident . [ END ]
+separated_nonempty_list(SEMI,typed_ident) -> typed_ident . SEMI separated_nonempty_list(SEMI,typed_ident) [ END ]
+## Transitions:
+-- On SEMI shift to state 18
+## Reductions:
+-- On END
+--   reduce production separated_nonempty_list(SEMI,typed_ident) -> typed_ident
+
+State 18:
+## Known stack suffix:
+## typed_ident SEMI
+## LR(1) items:
+separated_nonempty_list(SEMI,typed_ident) -> typed_ident SEMI . separated_nonempty_list(SEMI,typed_ident) [ END ]
+## Transitions:
+-- On TYP_VOID shift to state 3
+-- On TYP_INT shift to state 4
+-- On TYP_BOOL shift to state 5
+-- On LBRACKET shift to state 6
+-- On IDENT shift to state 7
+-- On typed_ident shift to state 17
+-- On typ shift to state 12
+-- On separated_nonempty_list(SEMI,typed_ident) shift to state 19
+## Reductions:
+
+State 19:
+## Known stack suffix:
+## typed_ident SEMI separated_nonempty_list(SEMI,typed_ident)
+## LR(1) items:
+separated_nonempty_list(SEMI,typed_ident) -> typed_ident SEMI separated_nonempty_list(SEMI,typed_ident) . [ END ]
+## Transitions:
+## Reductions:
+-- On END
+--   reduce production separated_nonempty_list(SEMI,typed_ident) -> typed_ident SEMI separated_nonempty_list(SEMI,typed_ident)
+
+State 20:
+## Known stack suffix:
+## separated_nonempty_list(SEMI,typed_ident)
+## LR(1) items:
+loption(separated_nonempty_list(SEMI,typed_ident)) -> separated_nonempty_list(SEMI,typed_ident) . [ END ]
+## Transitions:
+## Reductions:
+-- On END
+--   reduce production loption(separated_nonempty_list(SEMI,typed_ident)) -> separated_nonempty_list(SEMI,typed_ident)
+
+State 21:
+## Known stack suffix:
+## STRUCT IDENT BEGIN loption(separated_nonempty_list(SEMI,typed_ident))
+## LR(1) items:
+struct_def -> STRUCT IDENT BEGIN loption(separated_nonempty_list(SEMI,typed_ident)) . END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On END shift to state 22
+## Reductions:
+
+State 22:
+## Known stack suffix:
+## STRUCT IDENT BEGIN loption(separated_nonempty_list(SEMI,typed_ident)) END
+## LR(1) items:
+struct_def -> STRUCT IDENT BEGIN loption(separated_nonempty_list(SEMI,typed_ident)) END . [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+## Reductions:
+-- On VAR STRUCT FUNCTION EOF
+--   reduce production struct_def -> STRUCT IDENT BEGIN loption(separated_nonempty_list(SEMI,typed_ident)) END
+
+State 23:
+## Known stack suffix:
+## FUNCTION
+## LR(1) items:
+function_def -> FUNCTION . typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) list(instruction) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On TYP_VOID shift to state 3
+-- On TYP_INT shift to state 4
+-- On TYP_BOOL shift to state 5
+-- On LBRACKET shift to state 6
+-- On IDENT shift to state 7
+-- On typ shift to state 24
+## Reductions:
+
+State 24:
+## Known stack suffix:
+## FUNCTION typ
+## LR(1) items:
+function_def -> FUNCTION typ . IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) list(instruction) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On IDENT shift to state 25
+## Reductions:
+
+State 25:
+## Known stack suffix:
+## FUNCTION typ IDENT
+## LR(1) items:
+function_def -> FUNCTION typ IDENT . LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) list(instruction) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On LPAR shift to state 26
+## Reductions:
+
+State 26:
+## Known stack suffix:
+## FUNCTION typ IDENT LPAR
+## LR(1) items:
+function_def -> FUNCTION typ IDENT LPAR . loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) list(instruction) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On TYP_VOID shift to state 3
+-- On TYP_INT shift to state 4
+-- On TYP_BOOL shift to state 5
+-- On LBRACKET shift to state 6
+-- On IDENT shift to state 7
+-- On typed_ident shift to state 27
+-- On typ shift to state 12
+-- On separated_nonempty_list(COMMA,typed_ident) shift to state 30
+-- On loption(separated_nonempty_list(COMMA,typed_ident)) shift to state 31
+## Reductions:
+-- On RPAR
+--   reduce production loption(separated_nonempty_list(COMMA,typed_ident)) ->
+
+State 27:
+## Known stack suffix:
+## typed_ident
+## LR(1) items:
+separated_nonempty_list(COMMA,typed_ident) -> typed_ident . [ RPAR ]
+separated_nonempty_list(COMMA,typed_ident) -> typed_ident . COMMA separated_nonempty_list(COMMA,typed_ident) [ RPAR ]
+## Transitions:
+-- On COMMA shift to state 28
+## Reductions:
+-- On RPAR
+--   reduce production separated_nonempty_list(COMMA,typed_ident) -> typed_ident
+
+State 28:
+## Known stack suffix:
+## typed_ident COMMA
+## LR(1) items:
+separated_nonempty_list(COMMA,typed_ident) -> typed_ident COMMA . separated_nonempty_list(COMMA,typed_ident) [ RPAR ]
+## Transitions:
+-- On TYP_VOID shift to state 3
+-- On TYP_INT shift to state 4
+-- On TYP_BOOL shift to state 5
+-- On LBRACKET shift to state 6
+-- On IDENT shift to state 7
+-- On typed_ident shift to state 27
+-- On typ shift to state 12
+-- On separated_nonempty_list(COMMA,typed_ident) shift to state 29
+## Reductions:
+
+State 29:
+## Known stack suffix:
+## typed_ident COMMA separated_nonempty_list(COMMA,typed_ident)
+## LR(1) items:
+separated_nonempty_list(COMMA,typed_ident) -> typed_ident COMMA separated_nonempty_list(COMMA,typed_ident) . [ RPAR ]
+## Transitions:
+## Reductions:
+-- On RPAR
+--   reduce production separated_nonempty_list(COMMA,typed_ident) -> typed_ident COMMA separated_nonempty_list(COMMA,typed_ident)
+
+State 30:
+## Known stack suffix:
+## separated_nonempty_list(COMMA,typed_ident)
+## LR(1) items:
+loption(separated_nonempty_list(COMMA,typed_ident)) -> separated_nonempty_list(COMMA,typed_ident) . [ RPAR ]
+## Transitions:
+## Reductions:
+-- On RPAR
+--   reduce production loption(separated_nonempty_list(COMMA,typed_ident)) -> separated_nonempty_list(COMMA,typed_ident)
+
+State 31:
+## Known stack suffix:
+## FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident))
+## LR(1) items:
+function_def -> FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) . RPAR BEGIN list(variable_decl) list(instruction) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On RPAR shift to state 32
+## Reductions:
+
+State 32:
+## Known stack suffix:
+## FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR
+## LR(1) items:
+function_def -> FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR . BEGIN list(variable_decl) list(instruction) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On BEGIN shift to state 33
+## Reductions:
+
+State 33:
+## Known stack suffix:
+## FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN
+## LR(1) items:
+function_def -> FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN . list(variable_decl) list(instruction) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On VAR shift to state 2
+-- On variable_decl shift to state 34
+-- On list(variable_decl) shift to state 36
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production list(variable_decl) ->
+
+State 34:
+## Known stack suffix:
+## variable_decl
+## LR(1) items:
+list(variable_decl) -> variable_decl . list(variable_decl) [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On VAR shift to state 2
+-- On variable_decl shift to state 34
+-- On list(variable_decl) shift to state 35
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production list(variable_decl) ->
+
+State 35:
+## Known stack suffix:
+## variable_decl list(variable_decl)
+## LR(1) items:
+list(variable_decl) -> variable_decl list(variable_decl) . [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production list(variable_decl) -> variable_decl list(variable_decl)
+
+State 36:
+## Known stack suffix:
+## FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl)
+## LR(1) items:
+function_def -> FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) . list(instruction) END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On WHILE shift to state 37
+-- On RETURN shift to state 74
+-- On PUTCHAR shift to state 77
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IF shift to state 82
+-- On IDENT shift to state 87
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 91
+-- On list(instruction) shift to state 107
+-- On instruction shift to state 101
+-- On expression shift to state 103
+## Reductions:
+-- On END
+--   reduce production list(instruction) ->
+
+State 37:
+## Known stack suffix:
+## WHILE
+## LR(1) items:
+instruction -> WHILE . LPAR expression RPAR BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On LPAR shift to state 38
+## Reductions:
+
+State 38:
+## Known stack suffix:
+## WHILE LPAR
+## LR(1) items:
+instruction -> WHILE LPAR . expression RPAR BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 71
+## Reductions:
+
+State 39:
+## Known stack suffix:
+## NEW
+## LR(1) items:
+expression -> NEW . IDENT [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> NEW . LBRACKET typ COMMA expression RBRACKET [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On LBRACKET shift to state 40
+-- On IDENT shift to state 70
+## Reductions:
+
+State 40:
+## Known stack suffix:
+## NEW LBRACKET
+## LR(1) items:
+expression -> NEW LBRACKET . typ COMMA expression RBRACKET [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On TYP_VOID shift to state 3
+-- On TYP_INT shift to state 4
+-- On TYP_BOOL shift to state 5
+-- On LBRACKET shift to state 6
+-- On IDENT shift to state 7
+-- On typ shift to state 41
+## Reductions:
+
+State 41:
+## Known stack suffix:
+## NEW LBRACKET typ
+## LR(1) items:
+expression -> NEW LBRACKET typ . COMMA expression RBRACKET [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On COMMA shift to state 42
+## Reductions:
+
+State 42:
+## Known stack suffix:
+## NEW LBRACKET typ COMMA
+## LR(1) items:
+expression -> NEW LBRACKET typ COMMA . expression RBRACKET [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 68
+## Reductions:
+
+State 43:
+## Known stack suffix:
+## LPAR
+## LR(1) items:
+expression -> LPAR . expression RPAR [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 66
+## Reductions:
+
+State 44:
+## Known stack suffix:
+## IDENT
+## LR(1) items:
+expression -> IDENT . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> IDENT . LPAR loption(separated_nonempty_list(COMMA,expression)) RPAR [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On LPAR shift to state 45
+## Reductions:
+-- On STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production expression -> IDENT
+
+State 45:
+## Known stack suffix:
+## IDENT LPAR
+## LR(1) items:
+expression -> IDENT LPAR . loption(separated_nonempty_list(COMMA,expression)) RPAR [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On separated_nonempty_list(COMMA,expression) shift to state 48
+-- On mem_access shift to state 49
+-- On loption(separated_nonempty_list(COMMA,expression)) shift to state 50
+-- On expression shift to state 52
+## Reductions:
+-- On RPAR
+--   reduce production loption(separated_nonempty_list(COMMA,expression)) ->
+
+State 46:
+## Known stack suffix:
+## CST
+## LR(1) items:
+expression -> CST . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+## Reductions:
+-- On STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production expression -> CST
+
+State 47:
+## Known stack suffix:
+## BOOL
+## LR(1) items:
+expression -> BOOL . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+## Reductions:
+-- On STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production expression -> BOOL
+
+State 48:
+## Known stack suffix:
+## separated_nonempty_list(COMMA,expression)
+## LR(1) items:
+loption(separated_nonempty_list(COMMA,expression)) -> separated_nonempty_list(COMMA,expression) . [ RPAR ]
+## Transitions:
+## Reductions:
+-- On RPAR
+--   reduce production loption(separated_nonempty_list(COMMA,expression)) -> separated_nonempty_list(COMMA,expression)
+
+State 49:
+## Known stack suffix:
+## mem_access
+## LR(1) items:
+expression -> mem_access . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+## Reductions:
+-- On STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production expression -> mem_access
+
+State 50:
+## Known stack suffix:
+## IDENT LPAR loption(separated_nonempty_list(COMMA,expression))
+## LR(1) items:
+expression -> IDENT LPAR loption(separated_nonempty_list(COMMA,expression)) . RPAR [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On RPAR shift to state 51
+## Reductions:
+
+State 51:
+## Known stack suffix:
+## IDENT LPAR loption(separated_nonempty_list(COMMA,expression)) RPAR
+## LR(1) items:
+expression -> IDENT LPAR loption(separated_nonempty_list(COMMA,expression)) RPAR . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+## Reductions:
+-- On STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production expression -> IDENT LPAR loption(separated_nonempty_list(COMMA,expression)) RPAR
+
+State 52:
+## Known stack suffix:
+## expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR RPAR PLUS LT LBRACKET DOT COMMA ]
+expression -> expression . STAR expression [ STAR RPAR PLUS LT LBRACKET DOT COMMA ]
+expression -> expression . LT expression [ STAR RPAR PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR RPAR PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . DOT IDENT [ STAR RPAR PLUS LT LBRACKET DOT COMMA ]
+separated_nonempty_list(COMMA,expression) -> expression . [ RPAR ]
+separated_nonempty_list(COMMA,expression) -> expression . COMMA separated_nonempty_list(COMMA,expression) [ RPAR ]
+## Transitions:
+-- On STAR shift to state 53
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+-- On COMMA shift to state 64
+## Reductions:
+-- On RPAR
+--   reduce production separated_nonempty_list(COMMA,expression) -> expression
+
+State 53:
+## Known stack suffix:
+## expression STAR
+## LR(1) items:
+expression -> expression STAR . expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 54
+## Reductions:
+
+State 54:
+## Known stack suffix:
+## expression STAR expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression . STAR expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression STAR expression . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression . LT expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . DOT IDENT [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+-- On STAR SEMI RPAR RBRACKET PLUS LT COMMA
+--   reduce production expression -> expression STAR expression
+
+State 55:
+## Known stack suffix:
+## expression LBRACKET
+## LR(1) items:
+mem_access -> expression LBRACKET . expression RBRACKET [ STAR SET SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 56
+## Reductions:
+
+State 56:
+## Known stack suffix:
+## expression LBRACKET expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+mem_access -> expression LBRACKET expression . RBRACKET [ STAR SET SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . DOT IDENT [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On RBRACKET shift to state 57
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 57:
+## Known stack suffix:
+## expression LBRACKET expression RBRACKET
+## LR(1) items:
+mem_access -> expression LBRACKET expression RBRACKET . [ STAR SET SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+## Reductions:
+-- On STAR SET SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production mem_access -> expression LBRACKET expression RBRACKET
+
+State 58:
+## Known stack suffix:
+## expression PLUS
+## LR(1) items:
+expression -> expression PLUS . expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 59
+## Reductions:
+
+State 59:
+## Known stack suffix:
+## expression PLUS expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression PLUS expression . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression . STAR expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression . LT expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . DOT IDENT [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On STAR shift to state 53
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+-- On SEMI RPAR RBRACKET PLUS LT COMMA
+--   reduce production expression -> expression PLUS expression
+
+State 60:
+## Known stack suffix:
+## expression DOT
+## LR(1) items:
+mem_access -> expression DOT . IDENT [ STAR SET SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On IDENT shift to state 61
+## Reductions:
+
+State 61:
+## Known stack suffix:
+## expression DOT IDENT
+## LR(1) items:
+mem_access -> expression DOT IDENT . [ STAR SET SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+## Reductions:
+-- On STAR SET SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production mem_access -> expression DOT IDENT
+
+State 62:
+## Known stack suffix:
+## expression LT
+## LR(1) items:
+expression -> expression LT . expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 63
+## Reductions:
+
+State 63:
+## Known stack suffix:
+## expression LT expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression . STAR expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression . LT expression [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression LT expression . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . DOT IDENT [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+-- On STAR shift to state 53
+-- On PLUS shift to state 58
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+-- On SEMI RPAR RBRACKET LT COMMA
+--   reduce production expression -> expression LT expression
+
+State 64:
+## Known stack suffix:
+## expression COMMA
+## LR(1) items:
+separated_nonempty_list(COMMA,expression) -> expression COMMA . separated_nonempty_list(COMMA,expression) [ RPAR ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On separated_nonempty_list(COMMA,expression) shift to state 65
+-- On mem_access shift to state 49
+-- On expression shift to state 52
+## Reductions:
+
+State 65:
+## Known stack suffix:
+## expression COMMA separated_nonempty_list(COMMA,expression)
+## LR(1) items:
+separated_nonempty_list(COMMA,expression) -> expression COMMA separated_nonempty_list(COMMA,expression) . [ RPAR ]
+## Transitions:
+## Reductions:
+-- On RPAR
+--   reduce production separated_nonempty_list(COMMA,expression) -> expression COMMA separated_nonempty_list(COMMA,expression)
+
+State 66:
+## Known stack suffix:
+## LPAR expression
+## LR(1) items:
+expression -> LPAR expression . RPAR [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+expression -> expression . PLUS expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR RPAR PLUS LT LBRACKET DOT ]
+mem_access -> expression . DOT IDENT [ STAR RPAR PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On RPAR shift to state 67
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 67:
+## Known stack suffix:
+## LPAR expression RPAR
+## LR(1) items:
+expression -> LPAR expression RPAR . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+## Reductions:
+-- On STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production expression -> LPAR expression RPAR
+
+State 68:
+## Known stack suffix:
+## NEW LBRACKET typ COMMA expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+expression -> NEW LBRACKET typ COMMA expression . RBRACKET [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+mem_access -> expression . DOT IDENT [ STAR RBRACKET PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On RBRACKET shift to state 69
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 69:
+## Known stack suffix:
+## NEW LBRACKET typ COMMA expression RBRACKET
+## LR(1) items:
+expression -> NEW LBRACKET typ COMMA expression RBRACKET . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+## Reductions:
+-- On STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production expression -> NEW LBRACKET typ COMMA expression RBRACKET
+
+State 70:
+## Known stack suffix:
+## NEW IDENT
+## LR(1) items:
+expression -> NEW IDENT . [ STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA ]
+## Transitions:
+## Reductions:
+-- On STAR SEMI RPAR RBRACKET PLUS LT LBRACKET DOT COMMA
+--   reduce production expression -> NEW IDENT
+
+State 71:
+## Known stack suffix:
+## WHILE LPAR expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+instruction -> WHILE LPAR expression . RPAR BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR RPAR PLUS LT LBRACKET DOT ]
+mem_access -> expression . DOT IDENT [ STAR RPAR PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On RPAR shift to state 72
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 72:
+## Known stack suffix:
+## WHILE LPAR expression RPAR
+## LR(1) items:
+instruction -> WHILE LPAR expression RPAR . BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On BEGIN shift to state 73
+## Reductions:
+
+State 73:
+## Known stack suffix:
+## WHILE LPAR expression RPAR BEGIN
+## LR(1) items:
+instruction -> WHILE LPAR expression RPAR BEGIN . list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On WHILE shift to state 37
+-- On RETURN shift to state 74
+-- On PUTCHAR shift to state 77
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IF shift to state 82
+-- On IDENT shift to state 87
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 91
+-- On list(instruction) shift to state 105
+-- On instruction shift to state 101
+-- On expression shift to state 103
+## Reductions:
+-- On END
+--   reduce production list(instruction) ->
+
+State 74:
+## Known stack suffix:
+## RETURN
+## LR(1) items:
+instruction -> RETURN . expression SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 75
+## Reductions:
+
+State 75:
+## Known stack suffix:
+## RETURN expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+instruction -> RETURN expression . SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR SEMI PLUS LT LBRACKET DOT ]
+mem_access -> expression . DOT IDENT [ STAR SEMI PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On SEMI shift to state 76
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 76:
+## Known stack suffix:
+## RETURN expression SEMI
+## LR(1) items:
+instruction -> RETURN expression SEMI . [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production instruction -> RETURN expression SEMI
+
+State 77:
+## Known stack suffix:
+## PUTCHAR
+## LR(1) items:
+instruction -> PUTCHAR . LPAR expression RPAR SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On LPAR shift to state 78
+## Reductions:
+
+State 78:
+## Known stack suffix:
+## PUTCHAR LPAR
+## LR(1) items:
+instruction -> PUTCHAR LPAR . expression RPAR SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 79
+## Reductions:
+
+State 79:
+## Known stack suffix:
+## PUTCHAR LPAR expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+instruction -> PUTCHAR LPAR expression . RPAR SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR RPAR PLUS LT LBRACKET DOT ]
+mem_access -> expression . DOT IDENT [ STAR RPAR PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On RPAR shift to state 80
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 80:
+## Known stack suffix:
+## PUTCHAR LPAR expression RPAR
+## LR(1) items:
+instruction -> PUTCHAR LPAR expression RPAR . SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On SEMI shift to state 81
+## Reductions:
+
+State 81:
+## Known stack suffix:
+## PUTCHAR LPAR expression RPAR SEMI
+## LR(1) items:
+instruction -> PUTCHAR LPAR expression RPAR SEMI . [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production instruction -> PUTCHAR LPAR expression RPAR SEMI
+
+State 82:
+## Known stack suffix:
+## IF
+## LR(1) items:
+instruction -> IF . LPAR expression RPAR BEGIN list(instruction) END ELSE BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On LPAR shift to state 83
+## Reductions:
+
+State 83:
+## Known stack suffix:
+## IF LPAR
+## LR(1) items:
+instruction -> IF LPAR . expression RPAR BEGIN list(instruction) END ELSE BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 84
+## Reductions:
+
+State 84:
+## Known stack suffix:
+## IF LPAR expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR RPAR PLUS LT LBRACKET DOT ]
+instruction -> IF LPAR expression . RPAR BEGIN list(instruction) END ELSE BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR RPAR PLUS LT LBRACKET DOT ]
+mem_access -> expression . DOT IDENT [ STAR RPAR PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On RPAR shift to state 85
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 85:
+## Known stack suffix:
+## IF LPAR expression RPAR
+## LR(1) items:
+instruction -> IF LPAR expression RPAR . BEGIN list(instruction) END ELSE BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On BEGIN shift to state 86
+## Reductions:
+
+State 86:
+## Known stack suffix:
+## IF LPAR expression RPAR BEGIN
+## LR(1) items:
+instruction -> IF LPAR expression RPAR BEGIN . list(instruction) END ELSE BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On WHILE shift to state 37
+-- On RETURN shift to state 74
+-- On PUTCHAR shift to state 77
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IF shift to state 82
+-- On IDENT shift to state 87
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 91
+-- On list(instruction) shift to state 95
+-- On instruction shift to state 101
+-- On expression shift to state 103
+## Reductions:
+-- On END
+--   reduce production list(instruction) ->
+
+State 87:
+## Known stack suffix:
+## IDENT
+## LR(1) items:
+expression -> IDENT . [ STAR SEMI PLUS LT LBRACKET DOT ]
+expression -> IDENT . LPAR loption(separated_nonempty_list(COMMA,expression)) RPAR [ STAR SEMI PLUS LT LBRACKET DOT ]
+instruction -> IDENT . SET expression SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On SET shift to state 88
+-- On LPAR shift to state 45
+## Reductions:
+-- On STAR SEMI PLUS LT LBRACKET DOT
+--   reduce production expression -> IDENT
+
+State 88:
+## Known stack suffix:
+## IDENT SET
+## LR(1) items:
+instruction -> IDENT SET . expression SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 89
+## Reductions:
+
+State 89:
+## Known stack suffix:
+## IDENT SET expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+instruction -> IDENT SET expression . SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR SEMI PLUS LT LBRACKET DOT ]
+mem_access -> expression . DOT IDENT [ STAR SEMI PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On SEMI shift to state 90
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 90:
+## Known stack suffix:
+## IDENT SET expression SEMI
+## LR(1) items:
+instruction -> IDENT SET expression SEMI . [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production instruction -> IDENT SET expression SEMI
+
+State 91:
+## Known stack suffix:
+## mem_access
+## LR(1) items:
+expression -> mem_access . [ STAR SEMI PLUS LT LBRACKET DOT ]
+instruction -> mem_access . SET expression SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On SET shift to state 92
+## Reductions:
+-- On STAR SEMI PLUS LT LBRACKET DOT
+--   reduce production expression -> mem_access
+
+State 92:
+## Known stack suffix:
+## mem_access SET
+## LR(1) items:
+instruction -> mem_access SET . expression SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IDENT shift to state 44
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 49
+-- On expression shift to state 93
+## Reductions:
+
+State 93:
+## Known stack suffix:
+## mem_access SET expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+instruction -> mem_access SET expression . SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR SEMI PLUS LT LBRACKET DOT ]
+mem_access -> expression . DOT IDENT [ STAR SEMI PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On SEMI shift to state 94
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 94:
+## Known stack suffix:
+## mem_access SET expression SEMI
+## LR(1) items:
+instruction -> mem_access SET expression SEMI . [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production instruction -> mem_access SET expression SEMI
+
+State 95:
+## Known stack suffix:
+## IF LPAR expression RPAR BEGIN list(instruction)
+## LR(1) items:
+instruction -> IF LPAR expression RPAR BEGIN list(instruction) . END ELSE BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On END shift to state 96
+## Reductions:
+
+State 96:
+## Known stack suffix:
+## IF LPAR expression RPAR BEGIN list(instruction) END
+## LR(1) items:
+instruction -> IF LPAR expression RPAR BEGIN list(instruction) END . ELSE BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On ELSE shift to state 97
+## Reductions:
+
+State 97:
+## Known stack suffix:
+## IF LPAR expression RPAR BEGIN list(instruction) END ELSE
+## LR(1) items:
+instruction -> IF LPAR expression RPAR BEGIN list(instruction) END ELSE . BEGIN list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On BEGIN shift to state 98
+## Reductions:
+
+State 98:
+## Known stack suffix:
+## IF LPAR expression RPAR BEGIN list(instruction) END ELSE BEGIN
+## LR(1) items:
+instruction -> IF LPAR expression RPAR BEGIN list(instruction) END ELSE BEGIN . list(instruction) END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On WHILE shift to state 37
+-- On RETURN shift to state 74
+-- On PUTCHAR shift to state 77
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IF shift to state 82
+-- On IDENT shift to state 87
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 91
+-- On list(instruction) shift to state 99
+-- On instruction shift to state 101
+-- On expression shift to state 103
+## Reductions:
+-- On END
+--   reduce production list(instruction) ->
+
+State 99:
+## Known stack suffix:
+## IF LPAR expression RPAR BEGIN list(instruction) END ELSE BEGIN list(instruction)
+## LR(1) items:
+instruction -> IF LPAR expression RPAR BEGIN list(instruction) END ELSE BEGIN list(instruction) . END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On END shift to state 100
+## Reductions:
+
+State 100:
+## Known stack suffix:
+## IF LPAR expression RPAR BEGIN list(instruction) END ELSE BEGIN list(instruction) END
+## LR(1) items:
+instruction -> IF LPAR expression RPAR BEGIN list(instruction) END ELSE BEGIN list(instruction) END . [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production instruction -> IF LPAR expression RPAR BEGIN list(instruction) END ELSE BEGIN list(instruction) END
+
+State 101:
+## Known stack suffix:
+## instruction
+## LR(1) items:
+list(instruction) -> instruction . list(instruction) [ END ]
+## Transitions:
+-- On WHILE shift to state 37
+-- On RETURN shift to state 74
+-- On PUTCHAR shift to state 77
+-- On NEW shift to state 39
+-- On LPAR shift to state 43
+-- On IF shift to state 82
+-- On IDENT shift to state 87
+-- On CST shift to state 46
+-- On BOOL shift to state 47
+-- On mem_access shift to state 91
+-- On list(instruction) shift to state 102
+-- On instruction shift to state 101
+-- On expression shift to state 103
+## Reductions:
+-- On END
+--   reduce production list(instruction) ->
+
+State 102:
+## Known stack suffix:
+## instruction list(instruction)
+## LR(1) items:
+list(instruction) -> instruction list(instruction) . [ END ]
+## Transitions:
+## Reductions:
+-- On END
+--   reduce production list(instruction) -> instruction list(instruction)
+
+State 103:
+## Known stack suffix:
+## expression
+## LR(1) items:
+expression -> expression . PLUS expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+expression -> expression . STAR expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+expression -> expression . LT expression [ STAR SEMI PLUS LT LBRACKET DOT ]
+instruction -> expression . SEMI [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+mem_access -> expression . LBRACKET expression RBRACKET [ STAR SET SEMI PLUS LT LBRACKET DOT ]
+mem_access -> expression . DOT IDENT [ STAR SET SEMI PLUS LT LBRACKET DOT ]
+## Transitions:
+-- On STAR shift to state 53
+-- On SEMI shift to state 104
+-- On PLUS shift to state 58
+-- On LT shift to state 62
+-- On LBRACKET shift to state 55
+-- On DOT shift to state 60
+## Reductions:
+
+State 104:
+## Known stack suffix:
+## expression SEMI
+## LR(1) items:
+instruction -> expression SEMI . [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production instruction -> expression SEMI
+
+State 105:
+## Known stack suffix:
+## WHILE LPAR expression RPAR BEGIN list(instruction)
+## LR(1) items:
+instruction -> WHILE LPAR expression RPAR BEGIN list(instruction) . END [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+-- On END shift to state 106
+## Reductions:
+
+State 106:
+## Known stack suffix:
+## WHILE LPAR expression RPAR BEGIN list(instruction) END
+## LR(1) items:
+instruction -> WHILE LPAR expression RPAR BEGIN list(instruction) END . [ WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL ]
+## Transitions:
+## Reductions:
+-- On WHILE RETURN PUTCHAR NEW LPAR IF IDENT END CST BOOL
+--   reduce production instruction -> WHILE LPAR expression RPAR BEGIN list(instruction) END
+
+State 107:
+## Known stack suffix:
+## FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) list(instruction)
+## LR(1) items:
+function_def -> FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) list(instruction) . END [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+-- On END shift to state 108
+## Reductions:
+
+State 108:
+## Known stack suffix:
+## FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) list(instruction) END
+## LR(1) items:
+function_def -> FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) list(instruction) END . [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+## Reductions:
+-- On VAR STRUCT FUNCTION EOF
+--   reduce production function_def -> FUNCTION typ IDENT LPAR loption(separated_nonempty_list(COMMA,typed_ident)) RPAR BEGIN list(variable_decl) list(instruction) END
+
+State 109:
+## Known stack suffix:
+## variable_decl
+## LR(1) items:
+decl -> variable_decl . [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+## Reductions:
+-- On VAR STRUCT FUNCTION EOF
+--   reduce production decl -> variable_decl
+
+State 110:
+## Known stack suffix:
+## struct_def
+## LR(1) items:
+decl -> struct_def . [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+## Reductions:
+-- On VAR STRUCT FUNCTION EOF
+--   reduce production decl -> struct_def
+
+State 111:
+## Known stack suffix:
+## program
+## LR(1) items:
+program' -> program . [ # ]
+## Transitions:
+## Reductions:
+-- On #
+--   accept program
+
+State 112:
+## Known stack suffix:
+## list(decl)
+## LR(1) items:
+program -> list(decl) . EOF [ # ]
+## Transitions:
+-- On EOF shift to state 113
+## Reductions:
+
+State 113:
+## Known stack suffix:
+## list(decl) EOF
+## LR(1) items:
+program -> list(decl) EOF . [ # ]
+## Transitions:
+## Reductions:
+-- On #
+--   reduce production program -> list(decl) EOF
+
+State 114:
+## Known stack suffix:
+## function_def
+## LR(1) items:
+decl -> function_def . [ VAR STRUCT FUNCTION EOF ]
+## Transitions:
+## Reductions:
+-- On VAR STRUCT FUNCTION EOF
+--   reduce production decl -> function_def
+
+State 115:
+## Known stack suffix:
+## decl
+## LR(1) items:
+list(decl) -> decl . list(decl) [ EOF ]
+## Transitions:
+-- On VAR shift to state 2
+-- On STRUCT shift to state 14
+-- On FUNCTION shift to state 23
+-- On variable_decl shift to state 109
+-- On struct_def shift to state 110
+-- On list(decl) shift to state 116
+-- On function_def shift to state 114
+-- On decl shift to state 115
+## Reductions:
+-- On EOF
+--   reduce production list(decl) ->
+
+State 116:
+## Known stack suffix:
+## decl list(decl)
+## LR(1) items:
+list(decl) -> decl list(decl) . [ EOF ]
+## Transitions:
+## Reductions:
+-- On EOF
+--   reduce production list(decl) -> decl list(decl)
+

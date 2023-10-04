@@ -1,0 +1,104 @@
+This archive contains material for implementing a compiler for a simple
+imperative language with functions and user-defined data structures.
+
+Source language: SIMP (imperative language with user-defined data structures)
+First target: IMP (imperative language with pointers)
+Final target: MIPS assembly
+
+A full and working translation from IMP to MIPS is already given.
+
+
+Tasks
+-----
+
+Your task for this part consists in:
+- choosing one of the 4 proposed strategies (details below on what they are)
+- completing the typing functions so that they check that every expression is
+  consistent and used in an adequate way (and produce any information required 
+  for the remainder of the translation)
+- completing the translation functions from SIMP to IMP
+
+You may also include the improved translation from IMP to MIPS in this project,
+but this is not a requirement (you can keep both tasks in separate projects to
+ensure that no bug in one project pollutes the other).
+
+Teaser: next task will replace SIMP by a basic object-oriented programming
+language.
+
+
+Help
+----
+
+The archive contains several test files, with '.simp' extension. Each contains
+a simple program testing one aspect of the SIMP language, and a comment that
+describes what should happen when the program is run (after successful 
+compilation).
+
+The compiler also contains a pretty-printer for IMP, that prints in a new
+file with '.imp' extension the program that has been obtained after translation
+from SIMP to IMP. This should help you to debug your translation, if running 
+the assembly code does not produce the intended results.
+
+It is a good idea to produce more test files.
+
+Each folder contains its own configuration files (compile the version in a
+given folder with 'dune build', and then you can run the produced executable
+on the test files, and finally simulate the generated mips programs with MARS).
+
+
+Summary of the 4 strategies:
+----------------------------
+
+There are 4 folders, proposing 4 slightly differents ways of translating SIMP
+to IMP. Each folder contains the full project (except tests), with the same
+(complete) translation from IMP to MIPS and the same pretty-printer.
+The choice between the 4 versions is mostly a matter of taste: they all contain
+the same difficulties, and you will remark if you try to complete two of them
+that the resulting codes will be strikingly similar.
+
+Folder Tsimp.
+As proposed during the course, this strategy uses two differents ASTs for SIMP:
+- the parser produces a simple AST, as defined in simp.ml
+- a typing pass (simp2tsimp.ml) produces an AST where expressions are annotated
+  by types, as defined in tsimp.ml
+- a translation pass (tsimp2imp.ml) uses the annotated AST to produce IMP code
+
+Folder Simp.
+As also seen during the course, this second strategy does not use a separate
+typing pass. Instead, it runs typechecking functions during the translation
+from SIMP to IMP.
+
+
+The previous two strategies use the simplest programming technology, but are not
+the most satisfactory: Tsimp requires a full new definition for the type of the
+annotated AST, and Simp might perform incomplete or redundant typechecking.
+So, here are two additional variants that you might find more elegant.
+
+
+Folder Asimp (my personal favorite, with best scalability properties).
+This is a variant of Tsimp with a unique definition of annotated AST, with a
+polymorphic annotation (defined in asimp.ml). The expressions in asimp.ml
+are annotated, and the types of expressions, instructions, and other elements,
+are parameterized by the type of the annotations.
+- the parser produces an AST annotated with 'unit' (each expression is 
+  annotated, but the annotations contain no information)
+- a typing pass (asimptyper.ml) takes the asimp AST, and produces a new asimp 
+  AST, now annotated with types
+- the translation pass asimp2imp.ml takes a type-annotated asimp input and
+  produces IMP code.
+
+Folder Msimp (the lightest version for this particular task).
+This one uses a unique AST (msimp.ml), with a mutable field just for the 
+information that is to be computed during typing (3rd field in the constructor
+'Str' for the type 'mem').
+- the parser produces an AST where the mutable field is initialized with the
+  value 'None' (from the 'option' type of caml)
+- the typing pass (msimptyper.ml) updates the mutable field from 'None' to
+  'Some i', where 'i' is the index of the field in its structure
+- the translation pass msimp2imp.ml expects an input in which each mutable field
+  has been properly redefined as 'Some i' (fails otherwise)
+
+A possible variant of the latter (not provided):
+- take the idea of Msimp, but with an additional field of the immutable type
+  'int option' instead of the mutable 'int option ref'; then the typing pass
+  reconstructs an AST with the updated additional field

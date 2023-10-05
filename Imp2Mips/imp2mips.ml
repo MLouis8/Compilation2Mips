@@ -191,6 +191,38 @@ let pop  reg =
 (* In both cases, the update of $sp guarantees that the next operation on the
    stack will take into account the fact that the stack grew or shrank. *)
 
+let adder x y = x+y
+let multiplier x y = x*y
+
+(* Little constant propagation optimization *)
+let rec opt_expr cpt expr = match expr with
+   | Cst n -> Cst n
+   | Bool b -> Bool b
+   | Var x -> Var x
+   | Call(x, l) -> Call(x, List.map (opt_expr cpt) l) (* here cpt could be 0 *)
+   | Binop(op, e1, e2) ->
+      let cmpt = match op with
+         | Add -> adder
+         | Mul -> multiplier
+         | Lt  -> failwith "not implemented"
+      in
+      match e1, e2 with (* check Call case, not filled, I think *)
+         | (Bool _,_)|(Var _,_) -> Binop(op, e1, opt_expr cpt e2)
+         | (_,Bool _)|(_,Var _) -> Binop(op, opt_expr cpt e1, e2)
+         | (Cst n1, Cst n2) -> Cst (cmpt n1 n2)
+         | (Cst n, _) -> begin
+            let opt2 = (opt_expr (cmpt cpt n) e2) in
+            match opt2 with
+               | Cst nn -> Cst nn
+               | _ -> Binop(op, Cst n, opt2)
+            end
+         | (_, Cst n) -> begin
+            let opt1 = (opt_expr (cmpt cpt n) e1) in
+            match opt1 with
+               | Cst nn -> Cst nn
+               | _ -> Binop(op, opt1, Cst n)
+            end
+         | _ -> opt_expr cpt (Binop(op, opt_expr cpt e1, opt_expr cpt e2))
 (**
    Function producing MIPS code for an IMP function. Function producing MIPS
    code for expressions and instructions will be defined inside.
@@ -257,7 +289,7 @@ let tr_function fdef =
      sequence of MIPS instructions that evaluates [e] and put the
      obtained value in register $t0.
    *)
-  let t = [|t0; t1; t2; t3; t4; t5; t6|] in
+  let t = [|t0; t1; t2; t3; t4; t5; t6; t7|] in
   let rec tr_expr e i = match e with
     (* Case of a constant: load the value in the target register $t0.
        Boolean [true] is coded by 1 and boolean [false] by 0. *)
@@ -284,12 +316,12 @@ let tr_function fdef =
          | Mul -> mul
          | Lt  -> slt
        in
-       if i < 6 then
+       if i < 7 then
          (* Evaluate [e2] *)
          tr_expr e2 i
          (* Evaluer [e1] *)
          @@ tr_expr e1 (i+1)
-         (* Apply the binary operation to $ti (the value of [e1]) and $t(i+1) (the
+         (* Apply the binary operation to $t(i+1) (the value of [e1]) and $ti (the
             value of [e2]), and put the result in $ti. *)
          @@ op t.(i) t.(i+1) t.(i)
        else
@@ -297,9 +329,9 @@ let tr_function fdef =
          (* Evaluate [e2] *)
          @@ tr_expr e2 (i-1)
          (* Evaluer [e1] *)
-         @@ tr_expr e1 (i)
+         @@ tr_expr e1 i
          (* Apply the binary operation to $t(i-1) (the value of [e1]) and $t(i) (the
-            value of [e2]), and put the result in $t(i-1). *)
+            value of [e2]), and put the result in $ti. *)
          @@ op t.(i) t.(i) t.(i-1)
          @@ pop t.(i-1)
     (* Function call.
@@ -307,11 +339,11 @@ let tr_function fdef =
        their values on the stack, from last to first. *)
     | Call(f, params) ->
        (* save the t registers*)
-       Array.fold_right (fun tk k -> k @@ push tk) t nop
+       Array.fold_right (fun  e code -> code @@ e) (Array.mapi (fun k tk -> if k < i then push tk else Nop) t) nop
        (* Evaluate the arguments and pass them on the stack. *)
        @@ let params_code =
            List.fold_right
-           (fun e code -> code @@ tr_expr e 0 @@ push t0)
+           (fun e code -> code @@ tr_expr e 0 @@ push t.(0))
            params nop
        in
        params_code
@@ -343,9 +375,9 @@ let tr_function fdef =
           are not reachable anymore). *)
        @@ addi sp sp (4 * List.length params)
        (* restore t registers *)
-       @@ Array.fold_right (fun tk k -> k @@ pop tk) t nop
+       @@ Array.fold_right (fun  e code -> code @@ e) (Array.mapi (fun k tk -> if k < i then pop t.(i-k) else Nop) t) nop
        (* remove them from stack *)
-       @@ addi sp sp (4 * Array.length t)
+       @@ addi sp sp (4 * i)
 
   in
 

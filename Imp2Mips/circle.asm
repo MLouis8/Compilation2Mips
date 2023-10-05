@@ -25,20 +25,6 @@ main:
 	sw $t0, 0($t1)
 	b __main_0
 __main_1:
-	subi $sp, $sp, 4
-	sw $t6, 0($sp)
-	subi $sp, $sp, 4
-	sw $t5, 0($sp)
-	subi $sp, $sp, 4
-	sw $t4, 0($sp)
-	subi $sp, $sp, 4
-	sw $t3, 0($sp)
-	subi $sp, $sp, 4
-	sw $t2, 0($sp)
-	subi $sp, $sp, 4
-	sw $t1, 0($sp)
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
 	lw $t0, 4($fp)
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
@@ -47,21 +33,7 @@ __main_1:
 	sw $t0, 0($sp)
 	jal affiche_ligne
 	addi $sp, $sp, 8
-	lw $t6, 0($sp)
-	addi $sp, $sp, 4
-	lw $t5, 0($sp)
-	addi $sp, $sp, 4
-	lw $t4, 0($sp)
-	addi $sp, $sp, 4
-	lw $t3, 0($sp)
-	addi $sp, $sp, 4
-	lw $t2, 0($sp)
-	addi $sp, $sp, 4
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	lw $t0, 0($sp)
-	addi $sp, $sp, 4
-	addi $sp, $sp, 28
+	addi $sp, $sp, 0
 	la $t0, retour
 	lw $t0, 0($t0)
 	move $a0, $t0

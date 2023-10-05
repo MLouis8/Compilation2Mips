@@ -1,0 +1,14 @@
+function main() {
+    var i;
+    i = 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
+    bis();
+    while(0 < i) {
+        putchar(35);
+        i = i + -1;
+    }
+}
+
+function bis() {
+    var i;
+    i = 2 + 3 + 4 + 2 + 3 + 4;
+}

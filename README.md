@@ -1,6 +1,6 @@
 # Compilation2Mips
 
-Compilation project:
+**Compilation project**:
 
 What's implemented:
 - basic exercice 1 work

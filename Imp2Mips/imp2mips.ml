@@ -194,35 +194,59 @@ let pop  reg =
 let adder x y = x+y
 let multiplier x y = x*y
 
-(* Little constant propagation optimization *)
-let rec opt_expr cpt expr = match expr with
+(* constant propagation optimization *)
+let rec opt_expr expr = match expr with
    | Cst n -> Cst n
    | Bool b -> Bool b
    | Var x -> Var x
-   | Call(x, l) -> Call(x, List.map (opt_expr cpt) l) (* here cpt could be 0 *)
+   | Call(x, l) -> Call(x, l)
    | Binop(op, e1, e2) ->
+      let opt1 = opt_expr e1 in
+      let opt2 = opt_expr e2 in
       let cmpt = match op with
          | Add -> adder
          | Mul -> multiplier
          | Lt  -> failwith "not implemented"
       in
-      match e1, e2 with (* check Call case, not filled, I think *)
-         | (Bool _,_)|(Var _,_) -> Binop(op, e1, opt_expr cpt e2)
-         | (_,Bool _)|(_,Var _) -> Binop(op, opt_expr cpt e1, e2)
+      match opt1, opt2 with
          | (Cst n1, Cst n2) -> Cst (cmpt n1 n2)
-         | (Cst n, _) -> begin
-            let opt2 = (opt_expr (cmpt cpt n) e2) in
-            match opt2 with
-               | Cst nn -> Cst nn
-               | _ -> Binop(op, Cst n, opt2)
-            end
-         | (_, Cst n) -> begin
-            let opt1 = (opt_expr (cmpt cpt n) e1) in
-            match opt1 with
-               | Cst nn -> Cst nn
-               | _ -> Binop(op, opt1, Cst n)
-            end
-         | _ -> opt_expr cpt (Binop(op, opt_expr cpt e1, opt_expr cpt e2))
+         | (Binop(sub_op, sub_e1, sub_e2), Cst n) | (Cst n, Binop(sub_op, sub_e1, sub_e2)) ->
+         begin
+            if op = sub_op then match sub_e1 with
+            | Cst n1 -> Binop(op, Cst (cmpt n n1), sub_e2) | _ -> match sub_e2 with
+            | Cst n2 -> Binop(op, sub_e1, Cst (cmpt n n2)) | _ -> Binop(op, opt1, opt2) 
+            else Binop(op, opt1, opt2)
+         end
+         | (Binop(sub1_op, sub1_e1, sub1_e2), Binop(sub2_op, sub2_e1, sub2_e2)) ->
+         begin
+            if (sub1_op = op) && (sub2_op = op)
+            then
+               match sub1_e1 with
+               | Cst n1 -> begin
+                  match sub2_e1 with
+                  | Cst n2 -> Binop(op, Cst (cmpt n1 n2), Binop(op, sub1_e2, sub2_e2))
+                  | _ -> begin
+                     match sub2_e2 with
+                     | Cst n2 -> Binop(op, Cst (cmpt n1 n2), Binop(op, sub1_e2, sub2_e1))
+                     | _ -> Binop(op, opt1, opt2)
+                  end
+               end
+               | _ -> begin
+                  match sub1_e2 with
+                  | Cst n1 -> begin
+                     match sub2_e1 with
+                     | Cst n2 -> Binop(op, Cst (cmpt n1 n2), Binop(op, sub1_e1, sub2_e2))
+                     | _ -> begin
+                        match sub2_e2 with
+                        | Cst n2 -> Binop(op, Cst (cmpt n1 n2), Binop(op, sub1_e1, sub2_e1))
+                        | _ -> Binop(op, opt1, opt2)
+                     end
+                  end
+                  | _ -> Binop(op, opt1, opt2)
+               end
+            else Binop(op, opt1, opt2)
+         end
+         | _ -> Binop(op, opt1, opt2)
 (**
    Function producing MIPS code for an IMP function. Function producing MIPS
    code for expressions and instructions will be defined inside.
@@ -381,6 +405,9 @@ let tr_function fdef =
 
   in
 
+  let tr_expression expr = tr_expr (opt_expr expr) 0
+
+  in
   (**
      Auxiliary function for producing unique labels, for use in the
      translation of control structures (if and while).
@@ -404,7 +431,7 @@ let tr_function fdef =
     (* Prints a char. *)
     | Putchar(e) ->
        (* Evaluate expression [e] *)
-       tr_expr e 0
+       tr_expression e
        (* Move the value of [e] from $t0 (where it has been produced)
           to $a0 (where syscall expects it). *)
        @@ move a0 t0
@@ -421,7 +448,7 @@ let tr_function fdef =
          | Some offset -> sw t0 offset fp
          | None -> la t1 id @@ sw t0 0 t1
        in
-       tr_expr e 0 @@ set_code
+       tr_expression e @@ set_code
 
     (* Conditional *)
     | If(c, s1, s2) ->
@@ -430,7 +457,7 @@ let tr_function fdef =
        and end_label = new_label()
        in
        (* Evaluate the condition [c] *)
-       tr_expr c 0
+       tr_expression c
        (* If we got a non-zero value, which is interpreted as [true], jump
           to the code fragment of the "then" branch... *)
        @@ bnez t0 then_label
@@ -464,7 +491,7 @@ let tr_function fdef =
        (* At the end of a pass through the loop, just fall to the evaluation of
           the condition, that determines whether the loop is executed again. *)
        @@ label test_label
-       @@ tr_expr c 0
+       @@ tr_expression c
        (* If the condition is non-zero, jumps back to the beginning of the loop
           body. *)
        @@ bnez t0 code_label
@@ -476,7 +503,7 @@ let tr_function fdef =
     (* Function termination. *)
     | Return(e) ->
        (* Evaluate the value to be returned, in $t0 *)
-       tr_expr e 0
+       tr_expression e
        (* Deallocate the part of the stack used for local variables *)
        @@ addi sp fp (-4)
        (* Retrieve the return address *)
@@ -490,7 +517,7 @@ let tr_function fdef =
        Note that the produced MIPS code writes a value in $t0, but
        this value will not be used. *)
     | Expr(e) ->
-       tr_expr e 0
+      tr_expression e
 
             
   in

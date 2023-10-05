@@ -193,22 +193,27 @@ let pop  reg =
 
 let adder x y = x+y
 let multiplier x y = x*y
+let special x y = x
 
 (* constant propagation optimization *)
 let rec opt_expr expr = match expr with
    | Cst n -> Cst n
    | Bool b -> Bool b
    | Var x -> Var x
-   | Call(x, l) -> Call(x, l)
+   | Call(x, l) -> Call(x, List.map opt_expr l)
    | Binop(op, e1, e2) ->
       let opt1 = opt_expr e1 in
       let opt2 = opt_expr e2 in
       let cmpt = match op with
          | Add -> adder
          | Mul -> multiplier
-         | Lt  -> failwith "not implemented"
+         | Lt  -> special
       in
-      match opt1, opt2 with
+      if op = Lt then match opt1, opt2 with
+         | (Bool b1, Bool b2) -> Bool (b1 < b2)
+         | (Cst n1, Cst n2)   -> Bool (n1 < n2)
+         | _ -> Binop(op, opt1, opt2)
+      else match opt1, opt2 with
          | (Cst n1, Cst n2) -> Cst (cmpt n1 n2)
          | (Binop(sub_op, sub_e1, sub_e2), Cst n) | (Cst n, Binop(sub_op, sub_e1, sub_e2)) ->
          begin

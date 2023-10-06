@@ -17,16 +17,12 @@ main:
 	addi $sp, $sp, -8
 	li $t0, 5
 	sw $t0, -12($fp)
-	lw $t0, -12($fp)
-	li $t1, 6
-	mul $t0, $t1, $t0
-	li $t1, 5
-	add $t0, $t1, $t0
-	sw $t0, -8($fp)
-	li $t0, 27
+	li $t0, 5
 	lw $t1, -12($fp)
-	li $t2, 2
-	mul $t1, $t2, $t1
+	lw $t2, -12($fp)
+	li $t3, 6
+	add $t2, $t3, $t2
+	add $t1, $t2, $t1
 	add $t0, $t1, $t0
 	sw $t0, -12($fp)
 	li $t0, 0

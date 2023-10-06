@@ -9,5 +9,10 @@ What's implemented:
   - more advanced propagation, ex: 1 + 3 * b * 2 + 4 -> 5 + b * 6
 
 What I plan to implement:
--  maybe try register allocation optimization
+- naive register allocation optimization:
+  - create a naive interference graph (let's consider every variable in a function interfere)
+  - colorize the graph with ocamlgraph
+  - if there's a solution assign registers to variables
+  - Pros: little optimizaiton, may work on small programs
+  - Cons: no heuristic for graph coloring, bad interference graph
 - exercice 2

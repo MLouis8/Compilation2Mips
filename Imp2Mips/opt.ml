@@ -1,12 +1,33 @@
 open Imp
 open Graph
 
+(* 
+constant propagation optimization
+pros: only one passage on the expression
+cons: doesn't support 3 + x + x + x + 2 -> 5 + x + x + x
+*)
+
+let rec partial_eval2 expr cpt = match expr with
+   | Cst n -> Cst n
+   | Bool b -> Bool b
+   | Var x -> Var x
+   | Call(x, l) -> Call(x, List.map partial_eval2 l)
+   | Binop(Add, Cst n1, Cst n2) -> Cst (n1 + n2)
+   | Binop(Mul, Cst n1, Cst n2) -> Cst (n1 * n2)
+   | Binop(Lt, Cst n1, Cst n2)  -> Bool (n1 < n2)
+   | Binop(op, Cst n, e) | Binop(op, e, Cst n) ->
+      let opt = partial_eval2 e (cpt+n)
+   | Binop(op, e1, e2) ->
+      (* recursive calls *)
+      let opt1 = partial_eval2 e1 in
+      let opt2 = partial_eval2 e2 in
+      
+
+
 let adder x y = x+y
 let multiplier x y = x*y
 let special x y = x
-
-(* constant propagation optimization *)
-let rec partial_eval expr = match expr with
+let rec partial_eval = function
    | Cst n -> Cst n
    | Bool b -> Bool b
    | Var x -> Var x

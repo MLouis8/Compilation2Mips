@@ -15,15 +15,19 @@ main:
 	sw $ra, 0($sp)
 	addi $fp, $sp, 4
 	addi $sp, $sp, -8
-	li $t0, 5
-	sw $t0, -12($fp)
-	li $t0, 5
+	lw $t0, -12($fp)
 	lw $t1, -12($fp)
 	lw $t2, -12($fp)
-	li $t3, 6
-	add $t2, $t3, $t2
-	add $t1, $t2, $t1
+	lw $t3, -12($fp)
+	li $t4, 12
+	mul $t3, $t4, $t3
+	mul $t2, $t3, $t2
+	mul $t1, $t2, $t1
+	mul $t0, $t1, $t0
+	li $t1, 5
 	add $t0, $t1, $t0
+	sw $t0, -8($fp)
+	li $t0, 0
 	sw $t0, -12($fp)
 	li $t0, 0
 	addi $sp, $fp, -4

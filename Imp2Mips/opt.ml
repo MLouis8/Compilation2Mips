@@ -1,96 +1,44 @@
 open Imp
 open Graph
 
-(* 
-constant propagation optimization
-pros: only one passage on the expression
-cons: doesn't support 3 + x + x + x + 2 -> 5 + x + x + x
-*)
+(* constant propagation optimization *)
+let increment cpt n op = match op with
+   | Add -> cpt+n
+   | Mul -> if cpt=0 then n else cpt*n
+   | Lt  -> failwith "not supported"
 
-let rec partial_eval2 expr cpt = match expr with
-   | Cst n -> Cst n
-   | Bool b -> Bool b
-   | Var x -> Var x
-   | Call(x, l) -> Call(x, List.map partial_eval2 l)
-   | Binop(Add, Cst n1, Cst n2) -> Cst (n1 + n2)
-   | Binop(Mul, Cst n1, Cst n2) -> Cst (n1 * n2)
-   | Binop(Lt, Cst n1, Cst n2)  -> Bool (n1 < n2)
-   | Binop(op, Cst n, e) | Binop(op, e, Cst n) ->
-      let opt = partial_eval2 e (cpt+n)
-   | Binop(op, e1, e2) ->
-      (* recursive calls *)
-      let opt1 = partial_eval2 e1 in
-      let opt2 = partial_eval2 e2 in
-      
+let partial_eval expr =
+   let rec cst_propagation expr cpt = match expr with
+      | Cst n -> Cst n
+      | Bool b -> Bool b
+      | Var x -> Var x
+      | Call(x, l) -> Call(x, List.map (fun x -> cst_propagation x 0) l)
+      | Binop(Add, Cst n1, Cst n2) -> Cst (n1 + n2 + cpt)
+      | Binop(Mul, Cst n1, Cst n2) -> if cpt=0 then Cst (n1 * n2) else Cst(n1 * n2 * cpt)
+      | Binop(Lt, Cst n1, Cst n2)  -> Bool (n1 < n2)
+      | Binop(op, Cst n, Binop(sub_op, e1, e2)) ->
+         let e = Binop(sub_op, e1, e2) in
+         let new_cpt = increment cpt n op in
+         if op = sub_op then
+            let opt = cst_propagation e new_cpt in 
+            if opt <> e then opt else Binop(op, Cst new_cpt, opt)
+         else Binop(op, Cst new_cpt, cst_propagation e 0)
+      | Binop(op, Binop(sub_op, e1, e2), Cst n) ->
+         let e = Binop(sub_op, e1, e2) in
+         let new_cpt = increment cpt n op in
+         if op = sub_op then
+            let opt = cst_propagation e new_cpt in 
+            if opt <> e then opt else Binop(op, opt, Cst new_cpt)
+         else Binop(op, cst_propagation e 0, Cst new_cpt)
+      | Binop(op, Cst n, Var x) -> Binop(op, Cst (increment cpt n op), Var x)
+      | Binop(op, Var x, Cst n) -> Binop(op, Var x, Cst (increment cpt n op))
+      | Binop(op, e1, e2) ->
+         let opt1 = cst_propagation e1 cpt in
+         let opt2 = if opt1 <> e1 then cst_propagation e2 0 else cst_propagation e2 cpt in
+         Binop(op, opt1, opt2)
+   in cst_propagation expr 0
 
-
-let adder x y = x+y
-let multiplier x y = x*y
-let special x y = x
-let rec partial_eval = function
-   | Cst n -> Cst n
-   | Bool b -> Bool b
-   | Var x -> Var x
-   | Call(x, l) -> Call(x, List.map partial_eval l)
-   | Binop(op, e1, e2) ->
-      (* recursive calls *)
-      let opt1 = partial_eval e1 in
-      let opt2 = partial_eval e2 in
-      let cmpt = match op with
-         | Add -> adder
-         | Mul -> multiplier
-         | Lt  -> special
-      in
-      (* boolean pre evaluation *)
-      if op = Lt then match opt1, opt2 with
-         | (Bool b1, Bool b2) -> Bool (b1 < b2)
-         | (Cst n1, Cst n2)   -> Bool (n1 < n2)
-         | _ -> Binop(op, opt1, opt2)
-      (* constant propagation *)
-      else match opt1, opt2 with
-         | (Cst n1, Cst n2) -> Cst (cmpt n1 n2)
-         (* Case: Binop(Binop, Cst) or Binop(Cst, Binop) *)
-         | (Binop(sub_op, sub_e1, sub_e2), Cst n) | (Cst n, Binop(sub_op, sub_e1, sub_e2)) ->
-         begin
-            if op = sub_op then match sub_e1 with
-            | Cst n1 -> Binop(op, Cst (cmpt n n1), sub_e2) | _ -> match sub_e2 with
-            | Cst n2 -> Binop(op, sub_e1, Cst (cmpt n n2)) | _ -> Binop(op, opt1, opt2) 
-            else Binop(op, opt1, opt2)
-         end
-         (* Case: Binop(Binop, Binop)*)
-         | (Binop(sub1_op, sub1_e1, sub1_e2), Binop(sub2_op, sub2_e1, sub2_e2)) ->
-         begin
-            if (sub1_op = op) && (sub2_op = op)
-            then
-               match sub1_e1 with
-               | Cst n1 -> begin
-                  match sub2_e1 with
-                  | Cst n2 -> Binop(op, Cst (cmpt n1 n2), Binop(op, sub1_e2, sub2_e2))
-                  | _ -> begin
-                     match sub2_e2 with
-                     | Cst n2 -> Binop(op, Cst (cmpt n1 n2), Binop(op, sub1_e2, sub2_e1))
-                     | _ -> Binop(op, opt1, opt2)
-                  end
-               end
-               | _ -> begin
-                  match sub1_e2 with
-                  | Cst n1 -> begin
-                     match sub2_e1 with
-                     | Cst n2 -> Binop(op, Cst (cmpt n1 n2), Binop(op, sub1_e1, sub2_e2))
-                     | _ -> begin
-                        match sub2_e2 with
-                        | Cst n2 -> Binop(op, Cst (cmpt n1 n2), Binop(op, sub1_e1, sub2_e1))
-                        | _ -> Binop(op, opt1, opt2)
-                     end
-                  end
-                  | _ -> Binop(op, opt1, opt2)
-               end
-            else Binop(op, opt1, opt2)
-         end
-         (* don't optimize othe cases *)
-         | _ -> Binop(op, opt1, opt2)
-
-(* Register allocation optimization *)
+(* TODO: Register allocation optimization *)
 (* We create a naive interference graph *)
 (* module G = Imperative.Graph.Abstract(struct type t = Var end)
 

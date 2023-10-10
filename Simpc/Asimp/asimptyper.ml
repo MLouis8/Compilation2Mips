@@ -42,11 +42,18 @@ let type_program (p: unit program): typ program =
       | Binop(op, e1, e2) -> mk_expr TInt (Binop(op, check (type_expr e1) TInt, check (type_expr e2) TInt))
       | Call(x, l)        -> mk_expr (rtrv_func_type x) (Call(x, List.map type_expr l))
       | New x             -> mk_expr (TStruct x) (New x)
-      | NewTab(t, e)      -> mk_expr (TArray t) (NewTab(t, check (type_expr e) t))
-      | Read m            -> 
-    and type_mem (m: unit mem): typ mem = match m with
-      | Arr(e1, e2) -> 
-      | _ -> TVoid
+      | NewTab(t, e)      -> mk_expr (TArray t) (NewTab(t, check (type_expr e) TInt))
+      | Read(Arr(e1, e2)) -> let t1 = type_expr e1 in
+                             let t = match t1.annot with
+                              | TArray t -> t
+                              | _ -> failwith "type error"
+                             in mk_expr t (Read(Arr(t1, check (type_expr e2) TInt)))
+      | Read(Str(e, x))   -> let t = type_expr e in
+                             let x = match t.annot with
+                              | TStruct x -> x
+                              | _ -> failwith "type error"
+                             in mk_expr (List.find (fun s, t -> if x = s then t) (Env.find x senv).fields)
+    and type_mem (m: unit mem): typ mem = TVoid
     in
 
     (* type instructions *)

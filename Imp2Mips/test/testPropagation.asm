@@ -29,6 +29,12 @@ main:
 	sw $t0, -8($fp)
 	li $t0, 0
 	sw $t0, -12($fp)
+	lw $t0, -12($fp)
+	li $t1, 12
+	mul $t0, $t1, $t0
+	li $t1, 14
+	add $t0, $t1, $t0
+	sw $t0, -8($fp)
 	li $t0, 0
 	addi $sp, $fp, -4
 	lw $ra, 0($sp)

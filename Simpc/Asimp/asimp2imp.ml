@@ -13,9 +13,9 @@ let translate_program (p: Asimp.typ Asimp.program) =
     | Var x             -> Var x
     | Binop(op, e1, e2) -> Binop(tr_op op, tr_expr e1, tr_expr e2)
     | Call(x, l)        -> Call(x, List.map tr_expr l)
-    | New x             -> failwith "not implemented"
-    | NewTab(t, e)      -> failwith "not implemented"
-    | Read m            -> failwith "not implemented"
+    | New x             -> Alloc()
+    | NewTab(t, e)      -> Alloc()
+    | Read m            -> Deref(tr_mem m)
   and tr_mem m = failwith "not implemented"
   in
 

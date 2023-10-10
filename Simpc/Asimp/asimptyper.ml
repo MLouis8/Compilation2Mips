@@ -22,10 +22,14 @@ let type_program (p: unit program): typ program =
   let fenv = add2env (List.map (fun (f: unit function_def) -> f.name, f) p.functions) Env.empty in
   let senv = add2env (List.map (fun s -> s.name, s) p.structs) Env.empty in
 
+  let rtrv_func_type x =
+    let f = Env.find x fenv in f.return
+  in
+
   (* typing a function definition *)
   let type_fdef fdef =
     (* add local elements to the environments *)
-    let tenv = failwith "not implemented" in
+    let tenv = add2env fdef.locals tenv in
 
     (* note: nested definitions ensure that all environments are known to the
        inner functions, without making them explicit arguments *)
@@ -36,11 +40,13 @@ let type_program (p: unit program): typ program =
       | Bool b            -> mk_expr TBool (Bool b)
       | Var x             -> mk_expr (Env.find x tenv) (Var x)
       | Binop(op, e1, e2) -> mk_expr TInt (Binop(op, check (type_expr e1) TInt, check (type_expr e2) TInt))
-      | Call(x, l)        -> mk_expr TVoid (Call(x, List.map type_expr l)) (* not sure about this one, TVoid should be function type *)
+      | Call(x, l)        -> mk_expr (rtrv_func_type x) (Call(x, List.map type_expr l))
       | New x             -> mk_expr (TStruct x) (New x)
       | NewTab(t, e)      -> mk_expr (TArray t) (NewTab(t, check (type_expr e) t))
-      | Read m            -> failwith "not implemented"
-    and type_mem m = TVoid
+      | Read m            -> 
+    and type_mem (m: unit mem): typ mem = match m with
+      | Arr(e1, e2) -> 
+      | _ -> TVoid
     in
 
     (* type instructions *)
@@ -50,9 +56,9 @@ let type_program (p: unit program): typ program =
       | Set(x, e)     -> Set (x, (check (type_expr e) (Env.find x tenv)))
       | If(b, s1, s2) -> If (check (type_expr b) TBool, type_seq s1, type_seq s2)
       | While(e, s)   -> While (check (type_expr e) TBool, type_seq s)
-      | Return e      -> Return (type_expr e) (* maybe return types should match to function definition *)
+      | Return e      -> Return (type_expr e)
       | Expr e        -> Expr (type_expr e)
-      | Write(m, e)   -> failwith "not implemented"
+      | Write(m, e)   -> Write(type_mem m, type_expr e)
     in
     { fdef with code = type_seq fdef.code }
   in

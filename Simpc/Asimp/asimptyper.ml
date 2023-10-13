@@ -43,17 +43,17 @@ let type_program (p: unit program): typ program =
       | Call(x, l)        -> mk_expr (rtrv_func_type x) (Call(x, List.map type_expr l))
       | New x             -> mk_expr (TStruct x) (New x)
       | NewTab(t, e)      -> mk_expr (TArray t) (NewTab(t, check (type_expr e) TInt))
-      | Read(Arr(e1, e2)) -> let t1 = type_expr e1 in
-                             let t = match t1.annot with
-                              | TArray t -> t
-                              | _ -> failwith "type error"
-                             in mk_expr t (Read(Arr(t1, check (type_expr e2) TInt)))
-      | Read(Str(e, x))   -> let t = type_expr e in
-                             let x = match t.annot with
-                              | TStruct x -> x
-                              | _ -> failwith "type error"
-                             in mk_expr (List.find (fun s, t -> if x = s then t) (Env.find x senv).fields)
-    and type_mem (m: unit mem): typ mem = TVoid
+      | Read(Arr(e1, e2)) -> let t1 = type_expr e1 in begin
+                             match t1.annot with
+                              | TArray t -> mk_expr t (Read(Arr(t1, check (type_expr e2) TInt)))
+                              | _        -> failwith "type error" end
+      | Read(Str(e, x))   -> let t1 = type_expr e in begin
+                             match t1.annot with
+                              | TStruct stru -> 
+                                let (_, t) = List.find (fun (str, _) -> str = x) (Env.find stru senv).fields in
+                                mk_expr t (Read(Str(t1, x)))
+                              | _ -> failwith "type error" end
+    and type_mem = failwith "not implemented"
     in
 
     (* type instructions *)

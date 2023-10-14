@@ -13,8 +13,8 @@ let translate_program (p: Asimp.typ Asimp.program) =
     | Var x             -> Var x
     | Binop(op, e1, e2) -> Binop(tr_op op, tr_expr e1, tr_expr e2)
     | Call(x, l)        -> Call(x, List.map tr_expr l)
-    | New x             -> Alloc()
-    | NewTab(t, e)      -> Alloc()
+    | New x             -> Alloc(Binop(Add, Cst 4, Cst (4 * List.length (Env.find x senv)))) (* Alloc pour le string et alloc pour la liste des noms et valeurs des fields *)
+    | NewTab(t, e)      -> Alloc(Binop(Mul, Cst 4, tr_expr e))
     | Read m            -> Deref(tr_mem m)
   and tr_mem m = failwith "not implemented"
   in

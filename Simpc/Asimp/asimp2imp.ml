@@ -3,6 +3,12 @@ let tr_op: Asimp.binop -> Imp.binop = function
   | Mul -> Mul
   | Lt  -> Lt
 
+let rec typ2byt: Asimp.typ -> int = function
+  | TInt      -> 4
+  | TBool     -> 1
+  | TStruct x -> 0 (* I want to alloc according to the struct composition ! *)
+  | TArray t  -> typ2byt t
+  | TVoid     -> 0
 (* main translation function *)
 let translate_program (p: Asimp.typ Asimp.program) =
 
@@ -13,8 +19,8 @@ let translate_program (p: Asimp.typ Asimp.program) =
     | Var x             -> Var x
     | Binop(op, e1, e2) -> Binop(tr_op op, tr_expr e1, tr_expr e2)
     | Call(x, l)        -> Call(x, List.map tr_expr l)
-    | New x             -> Alloc(Binop(Add, Cst 4, Cst (4 * List.length (Env.find x senv)))) (* Alloc pour le string et alloc pour la liste des noms et valeurs des fields *)
-    | NewTab(t, e)      -> Alloc(Binop(Mul, Cst 4, tr_expr e))
+    | New x             -> Alloc(Cst (typ2byt (TStruct x)))
+    | NewTab(t, e)      -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt t)))
     | Read m            -> Deref(tr_mem m)
   and tr_mem m = failwith "not implemented"
   in

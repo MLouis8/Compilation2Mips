@@ -1,0 +1,14 @@
+var n;
+
+function main() {
+  var i;
+  
+  n = 10;
+  i = 0;
+  while ((i < n)) {
+    putchar((48 + i));
+    i = (i + 1);
+  }
+}
+
+

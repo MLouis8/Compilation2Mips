@@ -14,6 +14,7 @@ let check te t =
 let add2env l env =
   List.fold_left (fun env (x, t) -> Env.add x t env) env l
 
+exception Error_msg of string
 (* main typing function *)
 let type_program (p: unit program): typ program =
 
@@ -23,13 +24,15 @@ let type_program (p: unit program): typ program =
   let senv = add2env (List.map (fun s -> s.name, s) p.structs) Env.empty in
 
   let rtrv_func_type x =
-    let f = Env.find x fenv in f.return
+    try let f = Env.find x fenv in f.return
+    with Not_found -> raise (Error_msg "function return type not found while calling")
   in
 
   (* typing a function definition *)
   let type_fdef fdef =
     (* add local elements to the environments *)
     let tenv = add2env fdef.locals tenv in
+    let tenv = add2env fdef.params tenv in
 
     (* note: nested definitions ensure that all environments are known to the
        inner functions, without making them explicit arguments *)
@@ -39,7 +42,8 @@ let type_program (p: unit program): typ program =
       | Cst n             -> mk_expr TInt (Cst n)
       | Bool b            -> mk_expr TBool (Bool b)
       | Var x             -> mk_expr (Env.find x tenv) (Var x)
-      | Binop(op, e1, e2) -> mk_expr TInt (Binop(op, check (type_expr e1) TInt, check (type_expr e2) TInt))
+      | Binop(op, e1, e2) -> let return_t = match op with | Add | Mul -> TInt | Lt -> TBool in 
+                             mk_expr return_t (Binop(op, check (type_expr e1) TInt, check (type_expr e2) TInt))
       | Call(x, l)        -> mk_expr (rtrv_func_type x) (Call(x, List.map type_expr l))
       | New x             -> mk_expr (TStruct x) (New x)
       | NewTab(t, e)      -> mk_expr (TArray t) (NewTab(t, check (type_expr e) TInt))
@@ -53,7 +57,7 @@ let type_program (p: unit program): typ program =
                                 let (_, t) = List.find (fun (str, _) -> str = x) (Env.find stru senv).fields in
                                 mk_expr t (Read(Str(t1, x)))
                               | _ -> failwith "type error" end
-    and type_mem = failwith "not implemented"
+    and type_mem (m: unit mem): typ * typ mem = failwith "not implemented"
     in
 
     (* type instructions *)
@@ -63,9 +67,9 @@ let type_program (p: unit program): typ program =
       | Set(x, e)     -> Set (x, (check (type_expr e) (Env.find x tenv)))
       | If(b, s1, s2) -> If (check (type_expr b) TBool, type_seq s1, type_seq s2)
       | While(e, s)   -> While (check (type_expr e) TBool, type_seq s)
-      | Return e      -> Return (type_expr e)
+      | Return e      -> Return (check (type_expr e) fdef.return)
       | Expr e        -> Expr (type_expr e)
-      | Write(m, e)   -> Write(type_mem m, type_expr e)
+      | Write(m, e)   -> let t, tm = type_mem m in Write(tm, (check (type_expr e) t))
     in
     { fdef with code = type_seq fdef.code }
   in

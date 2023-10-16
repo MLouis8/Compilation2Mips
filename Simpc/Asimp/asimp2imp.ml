@@ -8,7 +8,7 @@ let rec typ2byt: Asimp.typ -> int = function
   | TBool     -> 1
   | TStruct x -> 0 (* I want to alloc according to the struct composition ! *)
   | TArray t  -> typ2byt t
-  | TVoid     -> 0
+  | TVoid     -> raise(Invalid_argument "TVoid isn't a valid type")
 (* main translation function *)
 let translate_program (p: Asimp.typ Asimp.program) =
 
@@ -19,10 +19,15 @@ let translate_program (p: Asimp.typ Asimp.program) =
     | Var x             -> Var x
     | Binop(op, e1, e2) -> Binop(tr_op op, tr_expr e1, tr_expr e2)
     | Call(x, l)        -> Call(x, List.map tr_expr l)
-    | New x             -> Alloc(Cst (typ2byt (TStruct x)))
-    | NewTab(t, e)      -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt t)))
-    | Read m            -> Deref(tr_mem m)
-  and tr_mem m = failwith "not implemented"
+    | New x             -> Alloc(Cst (typ2byt te.annot))
+    | NewTab(t, e)      -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt te.annot)))
+    | Read(Arr(e1, e2)) -> Imp.array_access (tr_expr e1) (tr_expr e2)
+    | Read(Str(e, x))   -> match te.annot with begin
+                            | TStruct str_name -> failwith "not implemented"(* retrieve field x of the structure named str_name in the structures "env" *)
+                            | _ -> raise(Invalid_argument "Should be a TStruct here") end
+  and tr_mem: (e: Asimp.expression, x: string) -> Imp.expression = failwith "not implemented"
+  (* only for Str(e, x) *)
+    
   in
 
   (* translation of instructions *)
@@ -34,7 +39,9 @@ let translate_program (p: Asimp.typ Asimp.program) =
     | While(e, s)   -> While(tr_expr e, List.map tr_instr s)
     | Return e      -> Return(tr_expr e)
     | Expr e        -> Expr(tr_expr e)
-    | Write(m, e)   -> failwith "not implemented"
+    | Write(m, e)   -> match m with
+                        | Arr(e1, e2) -> Imp.array_write (tr_expr e1) (tr_expr e2) (tr_expr e)
+                        | Str(e1, x)   -> Write(tr_mem e1 x, tr_expr e)
   in
 
   (* translation of function definitions *)
@@ -47,4 +54,5 @@ let translate_program (p: Asimp.typ Asimp.program) =
   in
 
   { Imp.globals = List.map fst p.globals;
-    functions = List.map tr_fdef p.functions }
+    functions = List.map tr_fdef p.functions;
+    (* Can we put the structures definitions here ? *)}

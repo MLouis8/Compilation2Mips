@@ -9,7 +9,13 @@ let rec typ2byt: Asimp.typ -> int = function
   | TStruct x -> 0 (* I want to alloc according to the struct composition ! *)
   | TArray t  -> typ2byt t
   | TVoid     -> raise(Invalid_argument "TVoid isn't a valid type")
-(* main translation function *)
+
+let find_field (field_n: string) (struct_n: string) (sl: Asimp.struct_def list): Imp.expression =
+  let s = List.find (fun (sd: Asimp.struct_def) -> sd.name = struct_n) sl in
+  let (res, _) = List.find (fun (n, t) -> field_n = n) s.fields in
+  Var res
+
+  (* main translation function *)
 let translate_program (p: Asimp.typ Asimp.program) =
 
   (* translation of an expression *)
@@ -22,10 +28,11 @@ let translate_program (p: Asimp.typ Asimp.program) =
     | New x             -> Alloc(Cst (typ2byt te.annot))
     | NewTab(t, e)      -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt te.annot)))
     | Read(Arr(e1, e2)) -> Imp.array_access (tr_expr e1) (tr_expr e2)
-    | Read(Str(e, x))   -> match te.annot with begin
-                            | TStruct str_name -> failwith "not implemented"(* retrieve field x of the structure named str_name in the structures "env" *)
-                            | _ -> raise(Invalid_argument "Should be a TStruct here") end
-  and tr_mem: (e: Asimp.expression, x: string) -> Imp.expression = failwith "not implemented"
+    | Read(Str(e, x))   -> Deref(tr_mem e.annot x)
+  and tr_mem (t: Asimp.typ) (x: string): Imp.expression = match t with
+    | TStruct str_n -> find_field x str_n p.structs
+    | _ -> raise(Invalid_argument "Should be a TStruct here")
+    
   (* only for Str(e, x) *)
     
   in
@@ -41,7 +48,7 @@ let translate_program (p: Asimp.typ Asimp.program) =
     | Expr e        -> Expr(tr_expr e)
     | Write(m, e)   -> match m with
                         | Arr(e1, e2) -> Imp.array_write (tr_expr e1) (tr_expr e2) (tr_expr e)
-                        | Str(e1, x)   -> Write(tr_mem e1 x, tr_expr e)
+                        | Str(e1, x)   -> Write(tr_mem e1.annot x, tr_expr e)
   in
 
   (* translation of function definitions *)

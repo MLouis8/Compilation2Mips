@@ -1,0 +1,19 @@
+
+function main() {
+  var p;
+  var q;
+  
+  p = alloc(0);
+  *x = 2;
+  *y = 48;
+  putchar(*y);
+  q = p;
+  *y = 49;
+  putchar(*y);
+  p = alloc(0);
+  *y = 50;
+  putchar(*y);
+  putchar(*y);
+}
+
+

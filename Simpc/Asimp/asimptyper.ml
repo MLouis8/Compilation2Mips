@@ -23,8 +23,8 @@ let type_program (p: unit program): typ program =
   let fenv = add2env (List.map (fun (f: unit function_def) -> f.name, f) p.functions) Env.empty in
   let senv = add2env (List.map (fun s -> s.name, s) p.structs) Env.empty in
 
-  let rtrv_func_type x =
-    try let f = Env.find x fenv in f.return
+  let rtrv_func x =
+    try Env.find x fenv
     with Not_found -> raise (Error_msg "function return type not found while calling")
   in
 
@@ -44,20 +44,12 @@ let type_program (p: unit program): typ program =
       | Var x             -> mk_expr (Env.find x tenv) (Var x)
       | Binop(op, e1, e2) -> let return_t = match op with | Add | Mul -> TInt | Lt -> TBool in 
                              mk_expr return_t (Binop(op, check (type_expr e1) TInt, check (type_expr e2) TInt))
-      | Call(x, l)        -> mk_expr (rtrv_func_type x) (Call(x, List.map type_expr l))
+      | Call(x, l)        -> let f = rtrv_func x in
+                             let _ = List.iter2 (fun arg1 arg2 -> let _ = check (type_expr arg1) (snd arg2) in ()) l f.params in
+                             mk_expr f.return (Call(x, List.map type_expr l))
       | New x             -> mk_expr (TStruct x) (New x)
       | NewTab(t, e)      -> mk_expr (TArray t) (NewTab(t, check (type_expr e) TInt))
       | Read(m)           -> let (t1, t2) = type_mem m in mk_expr t1 (Read(t2))
-      (* | Read(Arr(e1, e2)) -> let t1 = type_expr e1 in begin
-                             match t1.annot with
-                              | TArray t -> mk_expr t (Read(Arr(t1, check (type_expr e2) TInt)))
-                              | _        -> failwith "type error" end
-      | Read(Str(e, x))   -> let t1 = type_expr e in begin
-                             match t1.annot with
-                              | TStruct stru -> 
-                                let (_, t) = List.find (fun (str, _) -> str = x) (Env.find stru senv).fields in
-                                mk_expr t (Read(Str(t1, x)))
-                              | _ -> failwith "type error" end *)
     and type_mem: unit mem -> typ * typ mem = function
       | Arr(e1, e2) -> 
         let t1 = type_expr e1 in begin

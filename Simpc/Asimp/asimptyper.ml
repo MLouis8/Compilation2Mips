@@ -67,8 +67,8 @@ let type_program (p: unit program): typ program =
       | Str(e, x)   ->
         let t1 = type_expr e in begin
           match t1.annot with
-           | TStruct stru -> 
-             let (_, t) = List.find (fun (str, _) -> str = x) (Env.find stru senv).fields in (t, Str(t1, x))
+           | TStruct struct_n -> 
+             let (_, t) = List.find (fun (str, _) -> str = x) (Env.find struct_n senv).fields in (t, Str(t1, x))
            | _ -> failwith "type error" end
     in
 

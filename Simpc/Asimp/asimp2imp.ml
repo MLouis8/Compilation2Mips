@@ -3,21 +3,26 @@ let tr_op: Asimp.binop -> Imp.binop = function
   | Mul -> Mul
   | Lt  -> Lt
 
-let rec typ2byt: Asimp.typ -> int = function
-  | TInt      -> 4
-  | TBool     -> 1
-  | TStruct x -> 0 (* I want to alloc according to the struct composition ! *)
-  | TArray t  -> typ2byt t
-  | TVoid     -> raise(Invalid_argument "TVoid isn't a valid type")
+let find_struct (struct_n: string) (sl: Asimp.struct_def list): Asimp.struct_def =
+  List.find (fun (sd: Asimp.struct_def) -> sd.name = struct_n) sl
 
-let find_field (field_n: string) (struct_n: string) (sl: Asimp.struct_def list): Imp.expression =
-  let s = List.find (fun (sd: Asimp.struct_def) -> sd.name = struct_n) sl in
+  let find_field (field_n: string) (struct_n: string) (sl: Asimp.struct_def list): Imp.expression =
+  let s = find_struct struct_n sl
+   in
   let (res, _) = List.find (fun (n, t) -> field_n = n) s.fields in
   Var res
 
   (* main translation function *)
 let translate_program (p: Asimp.typ Asimp.program) =
-
+  let rec typ2byt: Asimp.typ -> int = function
+    | TInt      -> 4
+    | TBool     -> 1
+    | TStruct x ->
+      let def = find_struct x p.structs in
+      
+    | TArray t  -> typ2byt t x
+    | TVoid     -> raise(Invalid_argument "TVoid isn't a valid type")
+  in
   (* translation of an expression *)
   let rec tr_expr (te: Asimp.typ Asimp.expression): Imp.expression = match te.expr with
     | Cst n             -> Cst n
@@ -25,7 +30,7 @@ let translate_program (p: Asimp.typ Asimp.program) =
     | Var x             -> Var x
     | Binop(op, e1, e2) -> Binop(tr_op op, tr_expr e1, tr_expr e2)
     | Call(x, l)        -> Call(x, List.map tr_expr l)
-    | New x             -> Alloc(Cst (typ2byt te.annot))
+    | New x             -> Alloc(Cst (typ2byt TStruct x))
     | NewTab(t, e)      -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt te.annot)))
     | Read(Arr(e1, e2)) -> Imp.array_access (tr_expr e1) (tr_expr e2)
     | Read(Str(e, x))   -> Deref(tr_mem e.annot x)

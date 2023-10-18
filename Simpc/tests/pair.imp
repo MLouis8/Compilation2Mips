@@ -3,15 +3,17 @@ function main() {
   var p;
   var q;
   
-  p = alloc(0);
-  *x = 2;
-  *y = 48;
-  putchar(*y);
+  p = alloc(8);
+  *(p + 0) = 2;
+  *(p + 4) = 48;
+  putchar(*(p + 4));
   q = p;
-  *y = 49;
-  putchar(*y);
-  p = alloc(0);
-  *y = 50;
-  putchar(*y);
-  putchar(*y);
+  *(q + 4) = 49;
+  putchar(*(p + 4));
+  p = alloc(8);
+  *(p + 4) = 50;
+  putchar(*(p + 4));
+  putchar(*(q + 4));
 }
+
+

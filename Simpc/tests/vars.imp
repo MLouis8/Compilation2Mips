@@ -1,0 +1,12 @@
+var x;
+var y;
+
+function main() {
+  
+  x = 1;
+  y = 2;
+  x = ((3 * y) + x);
+  putchar(((48 + x) + y));
+}
+
+

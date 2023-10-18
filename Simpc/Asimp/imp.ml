@@ -115,7 +115,7 @@ type program = {
     functions: function_def list;
   }
 (**
-   A programme:
+   A program:
      var zero;
 
      function main() {
@@ -139,5 +139,5 @@ let p = {
                     params = [];
                     locals = [];
                     code = [ Set("zero", Cst 0);
-                             Expr(Call("digits", [Var "zero"])) ] } ]
+                             Expr(Call("digits", [Var "zero"])) ] } ];
   }

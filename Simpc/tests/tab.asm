@@ -15,7 +15,13 @@ main:
 	sw $ra, 0($sp)
 	addi $fp, $sp, 4
 	addi $sp, $sp, -8
-	li $t0, 8
+	li $t0, 4
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	li $t0, 10
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	mul $t0, $t0, $t1
 	move $a0, $t0
 	li $v0, 9
 	syscall
@@ -24,104 +30,145 @@ main:
 	li $t0, 0
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
+	li $t0, 4
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	mul $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
 	lw $t0, -8($fp)
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
 	add $t0, $t0, $t1
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
-	li $t0, 2
+	li $t0, 0
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
 	sw $t0, 0($t1)
+	li $t0, 1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
 	li $t0, 4
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	mul $t0, $t0, $t1
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
 	lw $t0, -8($fp)
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
 	add $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	li $t0, 1
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	sw $t0, 0($t1)
+	li $t0, 0
+	sw $t0, -12($fp)
+	b __main_0
+__main_1:
+	li $t0, 2
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, -12($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	li $t0, 4
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	mul $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, -8($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, -12($fp)
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	li $t0, 4
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	mul $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, -8($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	lw $t0, 0($t0)
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	li $t0, 1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, -12($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	li $t0, 4
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	mul $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, -8($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	lw $t0, 0($t0)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	sw $t0, 0($t1)
+	li $t0, 1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, -12($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	sw $t0, -12($fp)
+__main_0:
+	li $t0, 8
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, -12($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	slt $t0, $t0, $t1
+	bnez $t0, __main_1
+	li $t0, 6
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	li $t0, 4
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	mul $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, -8($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	lw $t0, 0($t0)
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
 	li $t0, 48
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
-	sw $t0, 0($t1)
-	li $t0, 4
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, -8($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
 	add $t0, $t0, $t1
-	lw $t0, 0($t0)
-	move $a0, $t0
-	li $v0, 11
-	syscall
-	lw $t0, -8($fp)
-	sw $t0, -12($fp)
-	li $t0, 4
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, -12($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 49
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	sw $t0, 0($t1)
-	li $t0, 4
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, -8($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	lw $t0, 0($t0)
-	move $a0, $t0
-	li $v0, 11
-	syscall
-	li $t0, 8
-	move $a0, $t0
-	li $v0, 9
-	syscall
-	move $t0, $v0
-	sw $t0, -8($fp)
-	li $t0, 4
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, -8($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 50
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	sw $t0, 0($t1)
-	li $t0, 4
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, -8($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	lw $t0, 0($t0)
-	move $a0, $t0
-	li $v0, 11
-	syscall
-	li $t0, 4
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, -12($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	lw $t0, 0($t0)
 	move $a0, $t0
 	li $v0, 11
 	syscall

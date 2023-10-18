@@ -1,0 +1,17 @@
+
+function main() {
+  var p;
+  var t;
+  
+  p = alloc(8);
+  t = alloc(12);
+  *(t + 0) = 1;
+  *(t + 4) = p;
+  *(*(t + 4) + 0) = 2;
+  *(p + 4) = 3;
+  putchar((48 + *(t + 0)));
+  putchar((48 + *(*(t + 4) + 0)));
+  putchar((48 + *(*(t + 4) + 4)));
+}
+
+

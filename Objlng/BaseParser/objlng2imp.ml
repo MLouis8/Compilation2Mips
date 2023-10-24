@@ -26,16 +26,23 @@ let translate_program (p: Objlng.program) =
       | NewTab(t, e) -> failwith "not implemented"
       | Read m -> failwith "not implemented"
       | _ -> failwith "Error, tr_instr doesn't take care of special expressions"
-    and tr_mem m = failwith "not implemented"
+    and tr_mem: Objlng.mem -> Imp.expression = function
+      | Atr(e, x) -> begin
+        let c = tr_expr e in
+        let offset = 5 in
+        let address = "s" in
+        Deref(Binop(Add, Addr(address), Cst offset))
+      end
+      | Arr(e1, e2) -> failwith "not implemented"
     in
 
     (* translation of instructions *)
     let rec tr_seq s = List.map tr_instr s
     and tr_instr: Objlng.instruction -> Imp.instruction = function
       | Putchar e     -> Putchar(tr_expr e)
-      | If(e, s1, s2) -> failwith "not implemented"
-      | While(e, s) -> failwith "not implemented"
-      | Return e -> failwith "not implemented"
+      | If(e, s1, s2) -> If(tr_expr e, tr_seq s1, tr_seq s2)
+      | While(e, s) -> While(tr_expr e, tr_seq s)
+      | Return e -> Return(tr_expr e)
       | Expr e -> Expr(tr_expr e)
       | Set(x1, New(x2, l)) -> failwith "not implemented"
       | Set(x1, Call(x2, l)) -> failwith "not implemented"
@@ -44,7 +51,7 @@ let translate_program (p: Objlng.program) =
       | Write(m, New(x, l)) -> failwith "not implemented"
       | Write(m, Call(x, l)) -> failwith "not implemented"
       | Write(m, MCall(e, x, l)) -> failwith "not implemented"
-      | Write(m, e) -> failwith "not implemented"
+      | Write(m, e) -> let ma = tr_mem m in Write(ma, tr_expr e)
     in
     { Imp.name = fdef.name; 
     params = List.map fst fdef.params; 

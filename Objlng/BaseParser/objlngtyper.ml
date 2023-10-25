@@ -4,7 +4,7 @@ open Objlng
 module Env = Map.Make(String)
 type tenv = typ Env.t
 type fenv = function_def Env.t
-(* type senv = struct_def Env.t *)
+type cenv = class_def Env.t
 
 (* utility function *)
 let check t typ =
@@ -21,10 +21,16 @@ let type_program (p: program): unit =
   (* initialize global environments *)
   let tenv = add2env p.globals Env.empty in
   let fenv = add2env (List.map (fun (f: function_def) -> f.name, f) p.functions) Env.empty in
+  let cenv = add2env (List.map (fun (c: class_def) -> c.name, c) p.classes) Env.empty in
 
   let rtrv_func x =
     try Env.find x fenv
     with Not_found -> raise (Error_msg "function not found while calling")
+  in
+
+  let rtrv_class x =
+    try Env.find x cenv
+    with Not_found -> raise (Error_msg "class not found in class environement")
   in
 
   (* typing a function definition *)
@@ -48,11 +54,18 @@ let type_program (p: program): unit =
       end
       | Call(x, l)        -> let f = (rtrv_func x) in
         List.iter2 (fun arg1 arg2 -> let _ = check (type_expr arg1) (snd arg2) in ()) l f.params; f.return
-      | MCall(e, x, l)    -> failwith "not implemented"
-      | New(x, l)         -> failwith "not implemented" 
+      | MCall(e, x, l)    -> begin
+        match  type_expr e with
+          | TClass class_name ->
+            let c = rtrv_class (class_name) in
+            let met = List.find (fun (m: function_def) -> m.name = x) c.methods in
+            let _ = List.iter2 (fun arg param -> let _ = check (type_expr arg) (snd param) in ()) l met.params in met.return
+          | _ -> failwith "type error, should be a class here"
+        end
+      | New(x, l)         -> let _ = rtrv_class x in TClass x
       | NewTab(t, e)      -> let _ = check (type_expr e) TInt in TArray t
-      | Read(m)           -> failwith "not implemented"
-      | This              -> failwith "not implemented"
+      | Read(m)           -> type_mem m
+      | This              -> Env.find "_this" tenv
     and type_mem: mem -> Objlng.typ = failwith "not implemented"
       
     in
@@ -72,5 +85,10 @@ let type_program (p: program): unit =
       | Write(m, e)   -> check (type_expr e) (type_mem m)
     in
     type_seq fdef.code
+    in
+    let type_cdef (cdef: class_def): unit =
+    let tenv = Env.add "_this" (TClass cdef.name)  tenv in
+    List.iter (fun met -> let _ = type_fdef met in ()) cdef.methods
   in
-  List.iter (fun f -> let _ = type_fdef f in ()) p.functions
+  List.iter (fun f -> let _ = type_fdef f in ()) p.functions;
+  List.iter (fun f -> let _ = type_cdef f in ()) p.classes

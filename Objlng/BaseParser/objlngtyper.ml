@@ -34,7 +34,7 @@ let type_program (p: program): unit =
   in
 
   (* typing a function definition *)
-  let type_fdef (fdef: Objlng.function_def): Objlng.typ list =
+  let type_fdef (fdef: Objlng.function_def) (tenv: tenv): Objlng.typ list =
     (* add local elements to the environments *)
     let tenv = add2env fdef.locals tenv in
     let tenv = add2env fdef.params tenv in
@@ -66,8 +66,21 @@ let type_program (p: program): unit =
       | NewTab(t, e)      -> let _ = check (type_expr e) TInt in TArray t
       | Read(m)           -> type_mem m
       | This              -> Env.find "_this" tenv
-    and type_mem: mem -> Objlng.typ = failwith "not implemented"
-      
+    and type_mem: mem -> Objlng.typ = function
+      | Arr(e1, e2) -> begin
+        let _ = check (type_expr e2) TInt in
+        match type_expr e1 with
+        | TArray t -> t
+        | _ -> failwith "type error, the expression must be an array"
+      end
+      | Atr(e, x) ->
+        match type_expr e with
+        | TClass cname -> begin
+          let c = List.find (fun c -> c.name = cname) p.classes in
+          try snd (List.find (fun f -> fst f = x) c.fields)
+          with Not_found -> failwith "attribute not found"
+        end
+        | _ -> failwith "type error, the expression must be a class"   
     in
 
     (* type instructions *)
@@ -88,7 +101,7 @@ let type_program (p: program): unit =
     in
     let type_cdef (cdef: class_def): unit =
     let tenv = Env.add "_this" (TClass cdef.name)  tenv in
-    List.iter (fun met -> let _ = type_fdef met in ()) cdef.methods
+    List.iter (fun met -> let _ = type_fdef met tenv in ()) cdef.methods
   in
-  List.iter (fun f -> let _ = type_fdef f in ()) p.functions;
+  List.iter (fun f -> let _ = type_fdef f tenv in ()) p.functions;
   List.iter (fun f -> let _ = type_cdef f in ()) p.classes

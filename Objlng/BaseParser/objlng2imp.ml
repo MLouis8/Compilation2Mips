@@ -11,10 +11,13 @@ let add2env l env =
 
 (* main translation function *)
 let translate_program (p: Objlng.program) =
-  let tenv = add2env p.globals Env.empty in
+  let find_class name =
+    List.find (fun (cdef: Objlng.class_def) -> cdef.name = name) p.classes
+  in
+  let class_access cdef = failwith "not implemented" in
+  let class_offset field cdef = failwith "not implemented" in
 
-  let tr_fdef (fdef: Objlng.function_def) = 
-    let tenv = failwith "not implemented" in
+  let tr_fdef (fdef: Objlng.function_def) (this: string) : Imp.function_def = 
 
     (* translation of an expression *)
     let rec tr_expr: Objlng.expression -> Imp.expression = function
@@ -22,18 +25,17 @@ let translate_program (p: Objlng.program) =
       | Bool b -> Bool b
       | Var x  -> Var x
       | Binop(op, e1, e2) -> Binop(tr_op op, tr_expr e1, tr_expr e2)
-      | This -> failwith "not implemented"
-      | NewTab(t, e) -> failwith "not implemented"
-      | Read m -> failwith "not implemented"
+      | This -> class_access (find_class this)
+      | NewTab(t, e) -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt te.annot))) (*here we also need typin*)
+      | Read m -> tr_mem m
       | _ -> failwith "Error, tr_instr doesn't take care of special expressions"
     and tr_mem: Objlng.mem -> Imp.expression = function
       | Atr(e, x) -> begin
-        let c = tr_expr e in
-        let offset = 5 in
-        let address = "s" in
-        Deref(Binop(Add, Addr(address), Cst offset))
+        let cname = "class" (*here we need typing because TClass cname contains cname*) in
+        let offset = class_offset x (find_class cname) in
+        Deref(Binop(Add, tr_expr e, offset))
       end
-      | Arr(e1, e2) -> failwith "not implemented"
+      | Arr(e1, e2) -> Imp.array_access (tr_expr e1) (tr_expr e2)
     in
 
     (* translation of instructions *)
@@ -57,7 +59,10 @@ let translate_program (p: Objlng.program) =
     params = List.map fst fdef.params; 
     locals = List.map fst fdef.locals; 
     code = tr_seq fdef.code;
-  }
+    }
+  in
+  let tr_cdef (cdef: Objlng.class_def): Imp.function_def list =
+    List.map (fun met -> tr_fdef met cdef.name) cdef.methods
 in
   { Imp.globals = List.map fst p.globals;
-    functions = List.map tr_fdef p.functions; }
+    functions = List.map (fun f -> tr_fdef f "None") p.functions @ List.flatten (List.map tr_cdef p.classes); }

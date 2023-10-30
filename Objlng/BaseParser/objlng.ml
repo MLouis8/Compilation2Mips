@@ -13,51 +13,57 @@ type typ =
 
 type binop = Add | Mul | Lt
 
-type expression =
+type 'a expression = {
+  annot: 'a;
+  expr: 'a expr;
+}
+and 'a expr =
   | Cst   of int
   | Bool  of bool
   | Var   of string
-  | Binop of binop * expression * expression
-  | Call  of string * expression list
-  | MCall of expression * string * expression list
-  | New   of string * expression list (* create an instance and call the constructor *)
-  | NewTab of typ * expression (* create an array of the given type and size *)
-  | Read  of mem               (* read in memory *)
+  | Binop of binop * 'a expr * 'a expr
+  | Call  of string * 'a expr list
+  | MCall of 'a expr * string * 'a expr list
+  | New   of string * 'a expr list (* create an instance and call the constructor *)
+  | NewTab of typ * 'a expr (* create an array of the given type and size *)
+  | Read  of 'a mem               (* read in memory *)
   | This (* current object *)
-and mem =
-  | Arr of expression * expression (* array access     e1[e2]  *)
-  | Atr of expression * string     (* attribute access  o.x    *)
+and 'a mem =
+  | Arr of 'a expr * 'a expr (* array access     e1[e2]  *)
+  | Atr of 'a expr * string     (* attribute access  o.x    *)
 
-type instruction =
-  | Putchar of expression
-  | Set     of string * expression
-  | If      of expression * sequence * sequence
-  | While   of expression * sequence
-  | Return  of expression
-  | Expr    of expression
-  | Write   of mem * expression (*   m = e;   *)
-and sequence = instruction list
+let mk_expr a e = { annot=a; expr=e }
+
+type 'a instruction =
+  | Putchar of 'a expr
+  | Set     of string * 'a expr
+  | If      of 'a expr * 'a sequence * 'a sequence
+  | While   of 'a expr * 'a sequence
+  | Return  of 'a expr
+  | Expr    of 'a expr
+  | Write   of 'a mem * 'a expr (*   m = e;   *)
+and 'a sequence = 'a instruction list
 
 (* Function definition *)
-type function_def = {
+type 'a function_def = {
   name:   string;
   params: (string * typ) list;
   locals: (string * typ) list;
-  code:   sequence;
+  code:   'a sequence;
   return: typ;
 }
 
 (* Class definition *)
-type class_def = {
+type 'a class_def = {
   name:   string;
   fields: (string * typ) list;
-  methods: function_def list;
+  methods: 'a function_def list;
   parent: string option;
 }
 
 (* Program as in SIMP with "structs" upgraded to "classes"  *)
-type program = {
+type 'a program = {
   globals:   (string * typ) list;
-  functions: function_def list;
-  classes:   class_def list;
+  functions: 'a function_def list;
+  classes:   'a class_def list;
 }

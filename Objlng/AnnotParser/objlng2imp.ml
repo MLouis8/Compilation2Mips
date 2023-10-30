@@ -11,14 +11,21 @@ let add2env l env =
 
 (* translate a program *)
 let translate_program (p: Objlng.typ Objlng.program) =
-  let find_class: Objlng.typ -> Objlng.class_def = function
+  let find_class: Objlng.typ -> Objlng.typ Objlng.class_def = function
     | Objlng.TClass cname -> List.find (fun (cdef: Objlng.typ Objlng.class_def) -> cdef.name = cname) p.classes
     | _ -> failwith "should already be checked and refused"
   in
-  let class_offset cdef: Objlng.typ Objlng.class_def -> Imp.expression = failwith "not implemented" in
-
+  let field_offset (f: string) (cdef: Objlng.typ Objlng.class_def): Imp.expression =
+    let (offset, _) = List.fold_left (
+      fun pair field -> if snd pair || fst field = f then (fst pair, true) else (fst pair+4, false)
+    ) (4, false) cdef.fields in Cst offset
+  in
+  let create_instance (cdef: Objlng.typ Objlng.class_def): Imp.expression =
+    let sum_fields_size = List.fold_left (fun cpt field -> cpt + 4) 0 cdef.fields in (*try with typ2bit after*)
+    Alloc(Binop(Add, Cst 4, Cst sum_fields_size))
+  in
   (* translate a function *)
-  let tr_fdef (fdef: Objlng.typ Objlng.function_def) (this: string) : Imp.function_def = 
+  let tr_fdef (fdef: Objlng.typ Objlng.function_def): Imp.function_def = 
     let rec typ2byt: Objlng.typ -> int = function
       | TInt      -> 4
       | TBool     -> 1
@@ -34,14 +41,13 @@ let translate_program (p: Objlng.typ Objlng.program) =
       | Bool b -> Bool b
       | Var x  -> Var x
       | Binop(op, e1, e2) -> Binop(tr_op op, tr_expr e1, tr_expr e2)
-      | This -> Deref(class_offset (find_class te.annot))
+      | This -> let TClass cname = te.annot in Var (cname^"_descr")
       | NewTab(t, e) -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt te.annot)))
-      | Read m -> tr_mem m
+      | Read m -> Deref(tr_mem m)
       | _ -> failwith "shoudn't get here"
     and tr_mem: Objlng.typ Objlng.mem -> Imp.expression = function
-      | Atr(e, x) ->
-        Deref(Binop(Add, tr_expr e, class_offset x (find_class e.annot)))
-        | Arr(e1, e2) -> Imp.array_access (tr_expr e1) (tr_expr e2)
+      | Atr(e, x) -> Binop(Add, Deref(tr_expr e), field_offset x (find_class e.annot))
+      | Arr(e1, e2) -> Imp.array_access (tr_expr e1) (tr_expr e2)
     in
 
     (* translation of instructions *)
@@ -52,12 +58,15 @@ let translate_program (p: Objlng.typ Objlng.program) =
       | While(e, s) -> While(tr_expr e, tr_seq s)
       | Return e -> Return(tr_expr e)
       | Expr e -> Expr(tr_expr e)
-      | Set(x, e) -> match e.expr with
-        | New
-        | Call
-        | DCall
-        | _
-      | Write(m, e) -> let ma = tr_mem m in Write(ma, tr_expr e)
+      | Set(x1, e) -> begin match e.expr with
+        | New(x2, l) -> let instance = create_instance (find_class (TClass x2)) in
+          let call = Imp.Call(x2 ^ "_constructor", List.map tr_expr l) in (*[Imp.Var x1] @ *)
+          Seq([Set(x1, instance); Write(Var x1, Var (x2^"_descr")); Expr call])
+        | Call(x2, l) -> Set(x1, Call(x2, List.map tr_expr l))
+        | MCall(e2, x2, l) -> failwith "not implemented"
+        | _ -> Set(x1, tr_expr e)
+      end
+      | Write(m, e) -> Write(tr_mem m, tr_expr e)
     in
     { Imp.name = fdef.name; 
     params = List.map fst fdef.params; 
@@ -66,7 +75,7 @@ let translate_program (p: Objlng.typ Objlng.program) =
     }
   in
   let tr_cdef (cdef: Objlng.typ Objlng.class_def): Imp.function_def list =
-    List.map (fun met -> tr_fdef met cdef.name) cdef.methods
+    List.map (fun (met: Objlng.typ Objlng.function_def) -> tr_fdef {met with name = cdef.name^"_"^met.name}) cdef.methods
 in
-  { Imp.globals = List.map fst p.globals;
-    functions = List.map (fun f -> tr_fdef f "None") p.functions @ List.flatten (List.map tr_cdef p.classes); }
+  { Imp.globals = List.map fst p.globals @ List.map (fun (c: Objlng.typ Objlng.class_def) -> c.name^"_descr") p.classes;
+    functions = List.flatten (List.map tr_cdef p.classes) @ List.map (fun f -> tr_fdef f) p.functions; }

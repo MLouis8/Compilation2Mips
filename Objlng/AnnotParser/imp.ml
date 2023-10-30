@@ -39,7 +39,7 @@ let e = Binop(Mul,
               Call("f", [Cst 3; Bool true]))
 
 let array_offset t i = Binop(Add, t, Binop(Mul, Cst 4, i))
-let array_access t i = Deref(array_offset t i)
+let array_access t i = array_offset t i
 
 (**
    Data structure for instructions

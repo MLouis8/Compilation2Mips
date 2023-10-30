@@ -1,0 +1,18 @@
+var point_descr;
+
+function point_constructor(x, y) {
+  
+  *(*point_descr + 4) = x;
+  *(*point_descr + 8) = y;
+}
+
+function main() {
+  var p;
+  
+  p = alloc((4 + 8));
+  *p = point_descr;
+  point_constructor(1, 2);
+  putchar(*(*p + 4));
+}
+
+

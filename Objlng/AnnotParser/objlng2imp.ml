@@ -77,9 +77,19 @@ let translate_program (p: Objlng.typ Objlng.program) =
   let tr_cdef_methods (cdef: Objlng.typ Objlng.class_def): Imp.function_def list =
     List.map (fun (met: Objlng.typ Objlng.function_def) -> tr_fdef {met with name = cdef.name^"_"^met.name}) cdef.methods
   in
-  let tr_class_descriptors (cdef: Objlng.typ Objlng.class_def): Imp.class_descriptor =
-    { name=cdef.name; methods=List.map (fun (met: Objlng.typ Objlng.function_def) -> met.name) cdef.methods }
+  let tr_c_descriptor (cdef: Objlng.typ Objlng.class_def): Imp.function_def =
+    let seq = failwith "not implemented"
+    in
+    { name=cdef.name; params=[]; locals=[]; code=seq }
+  in
+  let tr_functions (fdef: Objlng.typ Objlng.function_def) (c_descrs: Imp.function_def list): Imp.function_def =
+    if fdef.name = "main" then
+      failwith "not implemented"
+    else
+      tr_fdef fdef
+  in
+  let class_descriptors = List.map tr_c_descriptor p.classes
   in
   { Imp.globals = List.map fst p.globals @ List.map (fun (c: Objlng.typ Objlng.class_def) -> c.name^"_descr") p.classes;
-    Imp.class_descriptors = List.map tr_class_descriptors p.classes;
-    Imp.functions = List.flatten (List.map tr_cdef_methods p.classes) @ List.map (fun f -> tr_fdef f) p.functions; }
+    Imp.class_descriptors = class_descriptors;
+    Imp.functions = List.flatten (List.map tr_cdef_methods p.classes) @ List.map (fun f -> tr_functions f class_descriptors) p.functions; }

@@ -74,8 +74,12 @@ let translate_program (p: Objlng.typ Objlng.program) =
     code = tr_seq fdef.code;
     }
   in
-  let tr_cdef (cdef: Objlng.typ Objlng.class_def): Imp.function_def list =
+  let tr_cdef_methods (cdef: Objlng.typ Objlng.class_def): Imp.function_def list =
     List.map (fun (met: Objlng.typ Objlng.function_def) -> tr_fdef {met with name = cdef.name^"_"^met.name}) cdef.methods
-in
+  in
+  let tr_class_descriptors (cdef: Objlng.typ Objlng.class_def): Imp.class_descriptor =
+    { name=cdef.name; methods=List.map (fun (met: Objlng.typ Objlng.function_def) -> met.name) cdef.methods }
+  in
   { Imp.globals = List.map fst p.globals @ List.map (fun (c: Objlng.typ Objlng.class_def) -> c.name^"_descr") p.classes;
-    functions = List.flatten (List.map tr_cdef p.classes) @ List.map (fun f -> tr_fdef f) p.functions; }
+    Imp.class_descriptors = List.map tr_class_descriptors p.classes;
+    Imp.functions = List.flatten (List.map tr_cdef_methods p.classes) @ List.map (fun f -> tr_fdef f) p.functions; }

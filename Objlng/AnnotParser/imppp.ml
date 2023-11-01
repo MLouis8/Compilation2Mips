@@ -48,7 +48,7 @@ let rec print_vars fmt = function
   (* | [x] -> fprintf fmt "var %s;@," x *)
   | x::vars -> fprintf fmt "@[<v>var %s;@,%a@]" x print_vars vars
 
-let print_fdef fmt fdef =
+let print_fdef fmt (fdef: function_def) =
   fprintf fmt "@[<v>@[<v 2>function %s(@[%a@]) {@,%a@,%a@]@,}@,@]" 
     fdef.name print_params fdef.params print_vars fdef.locals print_seq fdef.code
 

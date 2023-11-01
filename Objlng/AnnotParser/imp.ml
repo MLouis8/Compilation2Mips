@@ -110,12 +110,18 @@ let f = {
     code = [ Set("c", Binop(Add, Var "start", Cst 48)); i ]
   }
 
+type class_descriptor = {
+  name: string;
+  methods: string list;
+}
 (**
    Data structure for a program
  *)
 type program = {
     (* List of named global variables *)
     globals: string list;
+    (* Class descriptors creation *)
+    class_descriptors: class_descriptor list;
     (* The functions defined by the program *)
     functions: function_def list;
   }
@@ -139,6 +145,7 @@ type program = {
  *)
 let p = {
     globals = ["zero"];
+    class_descriptors = [];
     functions = [ f;
                   { name = "main";
                     params = [];

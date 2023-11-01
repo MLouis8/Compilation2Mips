@@ -372,7 +372,7 @@ let translate_program prog =
   let function_codes = List.fold_right
     (fun (fdef: function_def) code ->
       label fdef.name @@ tr_function fdef @@ code)
-    (prog.functions @ prog.class_descriptors) nop
+    prog.functions nop
   in
   let text = init @@ function_codes @@ built_ins
   and data = List.fold_right

@@ -8,6 +8,49 @@ init_end:
 	jal main
 	li $v0, 10
 	syscall
+point_descriptor:
+	subi $sp, $sp, 4
+	sw $fp, 0($sp)
+	subi $sp, $sp, 4
+	sw $ra, 0($sp)
+	addi $fp, $sp, 4
+	addi $sp, $sp, 0
+	li $t0, 4
+	move $a0, $t0
+	li $v0, 9
+	syscall
+	move $t0, $v0
+	la $t1, point_descr
+	sw $t0, 0($t1)
+	la $t0, point_descr
+	lw $t0, 0($t0)
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	li $t0, 0
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	sw $t0, 0($t1)
+	li $t0, 4
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	la $t0, point_descr
+	lw $t0, 0($t0)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	la $t0, point_constructor
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	sw $t0, 0($t1)
+	li $t0, 0
+	addi $sp, $fp, -4
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	lw $fp, 0($sp)
+	addi $sp, $sp, 4
+	jr $ra
 point_constructor:
 	subi $sp, $sp, 4
 	sw $fp, 0($sp)
@@ -18,30 +61,26 @@ point_constructor:
 	li $t0, 4
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
-	la $t0, point_descr
-	lw $t0, 0($t0)
-	lw $t0, 0($t0)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
 	lw $t0, 4($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	sw $t0, 0($t1)
-	li $t0, 8
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	la $t0, point_descr
-	lw $t0, 0($t0)
-	lw $t0, 0($t0)
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
 	add $t0, $t0, $t1
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
 	lw $t0, 8($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	sw $t0, 0($t1)
+	li $t0, 8
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, 4($fp)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, 12($fp)
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
 	sw $t0, 0($t1)
@@ -59,6 +98,8 @@ main:
 	sw $ra, 0($sp)
 	addi $fp, $sp, 4
 	addi $sp, $sp, -4
+	jal point_descriptor
+	addi $sp, $sp, 0
 	li $t0, 8
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
@@ -85,17 +126,25 @@ main:
 	li $t0, 1
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
+	lw $t0, -8($fp)
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
 	jal point_constructor
-	addi $sp, $sp, 8
+	addi $sp, $sp, 12
+	li $t0, 48
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
 	li $t0, 4
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
 	lw $t0, -8($fp)
-	lw $t0, 0($t0)
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
 	add $t0, $t0, $t1
 	lw $t0, 0($t0)
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
 	move $a0, $t0
 	li $v0, 11
 	syscall

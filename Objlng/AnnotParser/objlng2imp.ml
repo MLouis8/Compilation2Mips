@@ -3,6 +3,13 @@ let tr_op: Objlng.binop -> Imp.binop = function
   | Mul -> Mul
   | Lt  -> Lt
 
+let to_string (expr: Objlng.typ Objlng.expression) = match  expr.expr with
+  | Call(_) -> "Call"
+  | MCall(_) -> "MCall"
+  | New(_) -> "New"
+  | Read(_) -> "Read"
+  | _ -> "smth else"
+
 (* types for various environments *)
 module Env = Map.Make(String)
 
@@ -41,12 +48,13 @@ let translate_program (p: Objlng.typ Objlng.program) =
       | Bool b -> Bool b
       | Var x  -> Var x
       | Binop(op, e1, e2) -> Binop(tr_op op, tr_expr e1, tr_expr e2)
-      | This -> let TClass cname = te.annot in Var (cname^"_descr")
+      | Call(x, l) -> Call(x, List.map tr_expr l)
+      | This -> Var ("this")
       | NewTab(t, e) -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt te.annot)))
       | Read m -> Deref(tr_mem m)
-      | _ -> failwith "shoudn't get here"
+      | _ -> failwith ("Expr not catch: "^to_string te)
     and tr_mem: Objlng.typ Objlng.mem -> Imp.expression = function
-      | Atr(e, x) -> Binop(Add, Deref(tr_expr e), field_offset x (find_class e.annot))
+      | Atr(e, x) -> Binop(Add, tr_expr e, field_offset x (find_class e.annot))
       | Arr(e1, e2) -> Imp.array_access (tr_expr e1) (tr_expr e2)
     in
 
@@ -60,7 +68,7 @@ let translate_program (p: Objlng.typ Objlng.program) =
       | Expr e -> Expr(tr_expr e)
       | Set(x1, e) -> begin match e.expr with
         | New(x2, l) -> let instance = create_instance (find_class (TClass x2)) in
-          let call = Imp.Call(x2 ^ "_constructor", List.map tr_expr l) in (*[Imp.Var x1] @ *)
+          let call = Imp.Call(x2 ^ "_constructor", Var x1 :: List.map tr_expr l) in (*[Imp.Var x1] @ *)
           Seq([Set(x1, instance); Write(Var x1, Var (x2^"_descr")); Expr call])
         | Call(x2, l) -> Set(x1, Call(x2, List.map tr_expr l))
         | MCall(e2, x2, l) -> failwith "not implemented"
@@ -74,22 +82,52 @@ let translate_program (p: Objlng.typ Objlng.program) =
     code = tr_seq fdef.code;
     }
   in
+  (* modifying methods in class_definitions:
+      - changing the constructor (adding "this" param)
+      - changing method name "adding class name"
+    *)
+  let rectify_methods (cdef: Objlng.typ Objlng.class_def): Objlng.typ Objlng.class_def =
+    let mets = List.map (
+      fun (met: Objlng.typ Objlng.function_def): Objlng.typ Objlng.function_def ->
+        if met.name = "constructor" then
+          {
+            name=cdef.name^"_"^met.name;
+            params=("this", TVoid)::met.params;
+            locals=met.locals;
+            code=met.code;
+            return=met.return;
+          }
+        else
+          {met with name = cdef.name^"_"^met.name}
+    ) cdef.methods
+    in {cdef with methods=mets}
+  in
+  (* translating to imp class_definitions methods *)
   let tr_cdef_methods (cdef: Objlng.typ Objlng.class_def): Imp.function_def list =
-    List.map (fun (met: Objlng.typ Objlng.function_def) -> tr_fdef {met with name = cdef.name^"_"^met.name}) cdef.methods
+    List.map tr_fdef (rectify_methods cdef).methods
   in
+  (* creating a class descriptor: we choose to make it as a function called in main *)
   let tr_c_descriptor (cdef: Objlng.typ Objlng.class_def): Imp.function_def =
-    let seq = failwith "not implemented"
+    let descr_name: string = cdef.name^"_descr" in
+    let methods =
+      List.mapi (
+        fun i (met: Objlng.typ Objlng.function_def) -> Imp.Write(Binop(Add, Var descr_name, Cst ((i+1)*4)), Imp.Addr(met.name)))
+        (rectify_methods cdef).methods
     in
-    { name=cdef.name; params=[]; locals=[]; code=seq }
+    let code = [Imp.Set(descr_name, Imp.Alloc(Cst (List.length cdef.methods * 4))); Imp.Write(Var descr_name, Cst 0)] @ methods
+    in
+    { name=cdef.name^"_descriptor"; params=[]; locals=[]; code=code }
   in
+  (* function for addind class descriptors call in main *)
   let tr_functions (fdef: Objlng.typ Objlng.function_def) (c_descrs: Imp.function_def list): Imp.function_def =
     if fdef.name = "main" then
-      failwith "not implemented"
+      let seq = List.map (fun (c_descr: Imp.function_def) -> Objlng.Expr({annot=Objlng.TVoid; expr=Objlng.Call(c_descr.name, [])})) c_descrs
+      in
+      tr_fdef {fdef with code=seq @ fdef.code}
     else
       tr_fdef fdef
   in
   let class_descriptors = List.map tr_c_descriptor p.classes
   in
   { Imp.globals = List.map fst p.globals @ List.map (fun (c: Objlng.typ Objlng.class_def) -> c.name^"_descr") p.classes;
-    Imp.class_descriptors = class_descriptors;
-    Imp.functions = List.flatten (List.map tr_cdef_methods p.classes) @ List.map (fun f -> tr_functions f class_descriptors) p.functions; }
+    Imp.functions = class_descriptors @ List.flatten (List.map tr_cdef_methods p.classes) @ List.map (fun f -> tr_functions f class_descriptors) p.functions; }

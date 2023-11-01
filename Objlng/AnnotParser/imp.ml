@@ -116,8 +116,6 @@ let f = {
 type program = {
     (* List of named global variables *)
     globals: string list;
-    (* Class descriptors creation *)
-    class_descriptors: function_def list;
     (* The functions defined by the program *)
     functions: function_def list;
   }
@@ -141,7 +139,6 @@ type program = {
  *)
 let p = {
     globals = ["zero"];
-    class_descriptors = [];
     functions = [ f;
                   { name = "main";
                     params = [];

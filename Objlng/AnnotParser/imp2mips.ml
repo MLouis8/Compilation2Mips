@@ -236,17 +236,18 @@ let tr_function (fdef: function_def) =
       @@ li v0 9
       @@ syscall   (* sbrk -> shifts the limit of the heap *)
       @@ move t0 v0  (* v0 contains the first address of the allocated space *)
-    | Addr x -> (* load address x, global function address *)
+    | Addr x -> (* returns the address of x, a statically allocated element *)
       la t0 x
     | DCall(e, args) -> (*  *)
-      tr_expr e @@
       let params_code =
         List.fold_right
-          (fun e code -> code @@ tr_expr e @@ push t1)
+          (fun e code -> code @@ tr_expr e @@ push t0)
           args nop
       in
       params_code
-
+      @@ tr_expr e
+      @@ jalr t0
+      @@ addi sp sp (4 * List.length args)
   in
   
   let new_label =

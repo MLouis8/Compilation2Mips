@@ -15,7 +15,7 @@ let rec print_expr fmt = function
   | Call(f, args) -> fprintf fmt "%s(@[%a@])" f print_args args
   | Deref e -> fprintf fmt "*@[%a@]" print_expr e
   | Alloc e -> fprintf fmt "alloc(@[%a@])" print_expr e
-  | Addr x -> fprintf fmt "%s" x
+  | Addr x -> fprintf fmt "&%s" x
   | DCall(e, l) -> fprintf fmt "%a(@[%a@])" print_expr e print_args l 
 and print_args fmt = function
   | [] -> fprintf fmt ""

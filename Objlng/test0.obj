@@ -9,8 +9,8 @@ class point {
 
 function void main() {
   var point p;
-  p = new point(1, 2);
+  p = new point(9, 2);
   putchar(p.x+48);
 }
 
-// prints '1'
+// prints '9'

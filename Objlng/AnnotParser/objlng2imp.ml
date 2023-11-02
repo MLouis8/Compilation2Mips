@@ -28,8 +28,13 @@ let translate_program (p: Objlng.typ Objlng.program) =
     ) (4, false) cdef.fields in Cst offset
   in
   let create_instance (cdef: Objlng.typ Objlng.class_def): Imp.expression =
-    let sum_fields_size = List.fold_left (fun cpt field -> cpt + 4) 0 cdef.fields in (*try with typ2bit after*)
+    let sum_fields_size = List.fold_left (fun cpt field -> cpt + 4) 0 cdef.fields in (* maybe try with typ2bit after*)
     Alloc(Binop(Add, Cst 4, Cst sum_fields_size))
+  in
+  let method_offset (metName: string) (cdef: Objlng.typ Objlng.class_def): Imp.expression =
+    let (offset, _) = List.fold_left (
+      fun pair (met: Objlng.typ Objlng.function_def) -> if snd pair || met.name = metName then (fst pair, true) else (fst pair+4, false)
+    ) (4, false) cdef.methods in Cst offset
   in
   (* translate a function *)
   let tr_fdef (fdef: Objlng.typ Objlng.function_def): Imp.function_def = 
@@ -52,6 +57,8 @@ let translate_program (p: Objlng.typ Objlng.program) =
       | This -> Var ("this")
       | NewTab(t, e) -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt te.annot)))
       | Read m -> Deref(tr_mem m)
+      | MCall(e2, x2, l) ->
+        let tr_e = tr_expr e2 in DCall(Deref(Binop(Add, Deref(tr_e), method_offset x2 (find_class e2.annot))), tr_e :: List.map tr_expr l)
       | _ -> failwith ("Expr not catch: "^to_string te)
     and tr_mem: Objlng.typ Objlng.mem -> Imp.expression = function
       | Atr(e, x) -> Binop(Add, tr_expr e, field_offset x (find_class e.annot))
@@ -68,10 +75,11 @@ let translate_program (p: Objlng.typ Objlng.program) =
       | Expr e -> Expr(tr_expr e)
       | Set(x1, e) -> begin match e.expr with
         | New(x2, l) -> let instance = create_instance (find_class (TClass x2)) in
-          let call = Imp.Call(x2 ^ "_constructor", Var x1 :: List.map tr_expr l) in (*[Imp.Var x1] @ *)
+          let call = Imp.Call(x2 ^ "_constructor", Var x1 :: List.map tr_expr l) in
           Seq([Set(x1, instance); Write(Var x1, Var (x2^"_descr")); Expr call])
         | Call(x2, l) -> Set(x1, Call(x2, List.map tr_expr l))
-        | MCall(e2, x2, l) -> failwith "not implemented"
+        | MCall(e2, x2, l) ->
+          let tr_e = tr_expr e2 in Set(x1, DCall(Deref(Binop(Add, Deref(tr_e), method_offset x2 (find_class e2.annot))), tr_e :: List.map tr_expr l))
         | _ -> Set(x1, tr_expr e)
       end
       | Write(m, e) -> Write(tr_mem m, tr_expr e)
@@ -89,16 +97,13 @@ let translate_program (p: Objlng.typ Objlng.program) =
   let rectify_methods (cdef: Objlng.typ Objlng.class_def): Objlng.typ Objlng.class_def =
     let mets = List.map (
       fun (met: Objlng.typ Objlng.function_def): Objlng.typ Objlng.function_def ->
-        if met.name = "constructor" then
-          {
-            name=cdef.name^"_"^met.name;
-            params=("this", TVoid)::met.params;
-            locals=met.locals;
-            code=met.code;
-            return=met.return;
-          }
-        else
-          {met with name = cdef.name^"_"^met.name}
+        {
+          name=cdef.name^"_"^met.name;
+          params=("this", TVoid)::met.params;
+          locals=met.locals;
+          code=met.code;
+          return=met.return;
+        }
     ) cdef.methods
     in {cdef with methods=mets}
   in
@@ -111,10 +116,10 @@ let translate_program (p: Objlng.typ Objlng.program) =
     let descr_name: string = cdef.name^"_descr" in
     let methods =
       List.mapi (
-        fun i (met: Objlng.typ Objlng.function_def) -> Imp.Write(Binop(Add, Var descr_name, Cst ((i+1)*4)), Imp.Addr(met.name)))
+        fun i (met: Objlng.typ Objlng.function_def) -> Imp.Write(Binop(Add, Var descr_name, Cst ((i+1)*4)), Addr(met.name)))
         (rectify_methods cdef).methods
     in
-    let code = [Imp.Set(descr_name, Imp.Alloc(Cst (List.length cdef.methods * 4))); Imp.Write(Var descr_name, Cst 0)] @ methods
+    let code = [Imp.Set(descr_name, Imp.Alloc(Cst ((List.length cdef.methods+1) * 4))); Imp.Write(Var descr_name, Cst 0)] @ methods
     in
     { name=cdef.name^"_descriptor"; params=[]; locals=[]; code=code }
   in

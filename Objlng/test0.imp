@@ -2,7 +2,7 @@ var point_descr;
 
 function point_descriptor() {
   
-  point_descr = alloc(4);
+  point_descr = alloc(8);
   *point_descr = 0;
   *(point_descr + 4) = point_constructor;
 }
@@ -19,7 +19,7 @@ function main() {
   point_descriptor();
   p = alloc((4 + 8));
   *p = point_descr;
-  point_constructor(p, 1, 2);
+  point_constructor(p, 9, 2);
   putchar((*(p + 4) + 48));
 }
 

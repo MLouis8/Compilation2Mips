@@ -1,0 +1,34 @@
+var point_descr;
+
+function point_descriptor() {
+  
+  point_descr = alloc(12);
+  *point_descr = 0;
+  *(point_descr + 4) = &point_constructor;
+  *(point_descr + 8) = &point_sum;
+}
+
+function point_constructor(this, x, y) {
+  
+  *(this + 4) = x;
+  *(this + 8) = y;
+}
+
+function point_sum(this, x) {
+  
+  return(((x + *(this + 4)) + *(this + 8)));
+}
+
+function main() {
+  var p;
+  var c;
+  
+  point_descriptor();
+  p = alloc((4 + 8));
+  *p = point_descr;
+  point_constructor(p, 1, 2);
+  c = *(*p + 8)(p, 48);
+  putchar(c);
+}
+
+

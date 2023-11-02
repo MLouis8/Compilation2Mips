@@ -1,0 +1,44 @@
+class point2D {
+  attribute int x;
+  attribute int y;
+  method void constructor(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+  method int sum(int x) {
+    return (x+this.x+this.y);
+  }
+}
+
+class point3D {
+    attribute int x;
+    attribute int y;
+    attribute int z;
+    method void constructor(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    method void addCoord(point3D p2) {
+        this.x = this.x + p2.x;
+        this.y = this.y + p2.y;
+        this.z = this.z + p2.z;
+    }
+}
+
+function void main() {
+  var point2D p1;
+  var point3D p2;
+  var point3D p3;
+  var int c;
+
+  p1 = new point2D(1, 8);
+  p2 = new point3D(0, 0, 0);
+  c = p1.sum(48);
+  putchar(c);
+  p3 = new point3D(1, 4, 2);
+  p2.addCoord(p3);
+  putchar(48+p2.y);
+}
+
+// prints '94'

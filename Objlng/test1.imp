@@ -1,0 +1,68 @@
+var point2D_descr;
+var point3D_descr;
+
+function point2D_descriptor() {
+  
+  point2D_descr = alloc(12);
+  *point2D_descr = 0;
+  *(point2D_descr + 4) = &point2D_constructor;
+  *(point2D_descr + 8) = &point2D_sum;
+}
+
+function point3D_descriptor() {
+  
+  point3D_descr = alloc(12);
+  *point3D_descr = 0;
+  *(point3D_descr + 4) = &point3D_constructor;
+  *(point3D_descr + 8) = &point3D_addCoord;
+}
+
+function point2D_constructor(this, x, y) {
+  
+  *(this + 4) = x;
+  *(this + 8) = y;
+}
+
+function point2D_sum(this, x) {
+  
+  return(((x + *(this + 4)) + *(this + 8)));
+}
+
+function point3D_constructor(this, x, y, z) {
+  
+  *(this + 4) = x;
+  *(this + 8) = y;
+  *(this + 12) = z;
+}
+
+function point3D_addCoord(this, p2) {
+  
+  *(this + 4) = (*(this + 4) + *(p2 + 4));
+  *(this + 8) = (*(this + 8) + *(p2 + 8));
+  *(this + 12) = (*(this + 12) + *(p2 + 12));
+}
+
+function main() {
+  var p1;
+  var p2;
+  var p3;
+  var c;
+  
+  point2D_descriptor();
+  point3D_descriptor();
+  p1 = alloc((4 + 8));
+  *p1 = point2D_descr;
+  point2D_constructor(p1, 1, 8);
+  p2 = alloc((4 + 12));
+  *p2 = point3D_descr;
+  point3D_constructor(p2, 0, 0, 0);
+  c = *(*p1 + 8)(p1, 48);
+  putchar(c);
+  p3 = alloc((4 + 12));
+  *p3 = point3D_descr;
+  point3D_constructor(p3, 1, 4, 2);
+  *(*p2 + 8)(p2, p3);
+  putchar((48 + *(p2 + 8)));
+}
+
+

@@ -13,5 +13,5 @@ What's implemented:
 - Annoted basic Objlng
 
 What I plan to implement:
-- Finish Objlng, add options
+- Add Objlng options, more tests
 - Optimization

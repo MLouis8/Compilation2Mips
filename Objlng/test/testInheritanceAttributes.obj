@@ -1,0 +1,31 @@
+class point {
+  attribute int x;
+  attribute int y;
+  method void constructor(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+  method int sum(int x) {
+    return (x+this.x+this.y);
+  }
+}
+
+class point3D extends point {
+    attribute int z;
+    method void constructor(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+}
+
+function void main() {
+  var point p;
+  var int c;
+  p = new point3D(1, 2, 3);
+  c = p.sum(48);
+  putchar(c);
+  putchar(p.z);
+}
+
+// prints '33'

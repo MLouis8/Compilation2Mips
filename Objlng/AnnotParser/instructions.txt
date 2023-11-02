@@ -297,6 +297,10 @@ following an incremental approach: first complete (i), add (ii) only when
 
   A.(i) New attributes
   --------------------
+TODO:
+- change field offset
+- modify constructor (for executing first parent constructor then actual one)
+- change create instance (for adding new attributes after parents one)
 
 Novelty with respect to the base version: one has to take into account the
 number of attributes of the parent class for deducing the total number of

@@ -238,7 +238,7 @@ let tr_function (fdef: function_def) =
       @@ move t0 v0  (* v0 contains the first address of the allocated space *)
     | Addr x -> (* returns the address of x, a statically allocated element *)
       la t0 x
-    | DCall(e, args) -> (*  *)
+    | DCall(e, args) ->
       let params_code =
         List.fold_right
           (fun e code -> code @@ tr_expr e @@ push t0)

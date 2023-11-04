@@ -11,6 +11,14 @@ type typ =
   | TVoid (* not an actual type in the source language, but having it in
              the AST makes the code more uniform *)
 
+let typ_to_string (t: typ): string =
+  match t with
+  | TInt -> "TInt"
+  | TBool -> "TBool"
+  | TClass x -> "TClass "^x
+  | TArray _ -> "TArray"
+  | TVoid -> "TVoid"
+
 type binop = Add | Mul | Lt
 
 type 'a expression = {
@@ -31,6 +39,13 @@ and 'a expr =
 and 'a mem =
   | Arr of 'a expression * 'a expression (* array access     e1[e2]  *)
   | Atr of 'a expression * string        (* attribute access  o.x    *)
+
+let expr_to_string (expr: typ expression) = match  expr.expr with
+  | Call(_) -> "Call"
+  | MCall(_) -> "MCall"
+  | New(_) -> "New"
+  | Read(_) -> "Read"
+  | _ -> "smth else"
 
 let mk_expr a e = { annot=a; expr=e }
 
@@ -60,6 +75,16 @@ type 'a class_def = {
   methods: 'a function_def list;
   parent: string option;
 }
+
+let find_class (t: typ) (classes: 'a class_def list): 'a class_def =
+  match t with
+  | TClass cname -> List.find (fun (cdef: 'a class_def) -> cdef.name = cname) classes
+  | _ -> failwith "class not found"
+
+let has_get_parent (cdef: 'a class_def) (classes: 'a class_def list): bool * 'a class_def =
+  match cdef.parent with
+  | Some parent -> (true, find_class (TClass parent) classes)
+  | None -> (false, cdef)
 
 (* Program as in IMP + types + user-defined  *)
 type 'a program = {

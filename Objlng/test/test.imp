@@ -24,7 +24,7 @@ function main() {
   var c;
   
   point_descriptor();
-  p = alloc((4 + 8));
+  p = alloc(12);
   *p = point_descr;
   point_constructor(p, 1, 2);
   c = *(*p + 8)(p, 48);

@@ -8,10 +8,10 @@ type cenv = unit class_def Env.t
 
 (* utility function *)
 let check te t =
-  if te.annot <> t then failwith "type error";
+  if te.annot <> t then failwith ("type error: "^typ_to_string te.annot^" is different from "^typ_to_string t);
   te
 
-let add2env l env =
+let add2env l env = 
   List.fold_left (fun env (x, t) -> Env.add x t env) env l
 
 exception Error_msg of string
@@ -40,6 +40,42 @@ let type_program (p: 'a program): typ program =
     let tenv = add2env fdef.locals tenv in
     let tenv = add2env fdef.params tenv in
 
+    (* checks if the attribute exists in the class_definition or in a parent class_defition and returns the attribute type *)
+    let check_inherited_atr (attr: string) (cdef: unit class_def): typ =
+      let find_attr cdef =
+        try snd (List.find (fun f -> fst f = attr) cdef.fields) 
+        with Not_found -> TVoid
+      in
+      let rec sub_check (attr: string) (cdef: unit class_def): typ =
+        let inheritance = has_get_parent cdef p.classes in 
+        if fst inheritance then
+          match sub_check attr (snd inheritance) with
+          | TVoid -> find_attr cdef
+          | t     -> t
+        else
+          find_attr cdef
+      in
+      let res = try sub_check attr cdef with Not_found -> failwith "attribute not found" in 
+      if res = TVoid then failwith "attribute not found in parent" else res
+    in
+
+    (* search if a method exist in the class_definition or in a parent class_definition and returns the method definition *)
+    let find_inherited_met (met_name:string) (cdef: unit class_def): unit function_def =
+      let find_met cdef =
+        List.find (fun (m: unit function_def) -> m.name = met_name) cdef.methods
+      in
+      let rec sub_check (met_name: string) (cdef: unit class_def): unit function_def =
+        let inheritance = has_get_parent cdef p.classes in 
+        if fst inheritance then
+          try sub_check met_name (snd inheritance)
+          with Not_found -> find_met cdef
+        else
+          find_met cdef
+      in
+      try sub_check met_name cdef
+      with Not_found -> failwith "method not found"
+    in
+
     (* type expressions *)
     let rec type_expr (e: 'a expression): typ expression = match e.expr with
       | Cst n             -> mk_expr TInt (Cst n)
@@ -54,8 +90,7 @@ let type_program (p: 'a program): typ program =
         let typed_e = type_expr e in
         match  typed_e.annot with
           | TClass class_name ->
-            let c = rtrv_class (class_name) in
-            let met = List.find (fun (m: 'a function_def) -> m.name = x) c.methods in
+            let met = find_inherited_met x (rtrv_class (class_name)) in
             let typed_l = List.map2 (fun arg param -> check (type_expr arg) (snd param)) l met.params in
             mk_expr met.return (MCall(typed_e, x, typed_l))
           | _ -> failwith "type error, should be a class here"
@@ -69,14 +104,13 @@ let type_program (p: 'a program): typ program =
         let t1 = type_expr e1 in begin
           match t1.annot with
           | TArray t -> (t, Arr(t1, check (type_expr e2) TInt))
-          | _        -> failwith "type error" end
+          | _        -> failwith "type error, should be an array here" end
       | Atr(e, x) ->
         let t = type_expr e in
         match t.annot with
         | TClass cname -> begin
-          let c = List.find (fun c -> c.name = cname) p.classes in
-          try (snd (List.find (fun f -> fst f = x) c.fields), Atr(t, x))
-          with Not_found -> failwith "attribute not found"
+          let cdef = find_class (TClass cname) p.classes in
+          (check_inherited_atr x cdef, Atr(t, x))
         end
         | _ -> failwith "type error, the expression must be a class"  
     in

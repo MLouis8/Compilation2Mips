@@ -43,7 +43,8 @@ function main() {
   p = alloc(16);
   *p = point3D_descr;
   point3D_constructor(p, 1, 2, 3);
-  c = (**p + 8)(p, 48);
+  c = *(**p + 8)(p, 48);
+  putchar(c);
   putchar((*(p + 12) + 48));
 }
 

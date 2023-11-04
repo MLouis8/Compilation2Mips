@@ -303,9 +303,14 @@ main:
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
 	add $t0, $t0, $t1
+	lw $t0, 0($t0)
 	jalr $t0
 	addi $sp, $sp, 8
 	sw $t0, -12($fp)
+	lw $t0, -12($fp)
+	move $a0, $t0
+	li $v0, 11
+	syscall
 	li $t0, 48
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)

@@ -40,7 +40,7 @@ let translate_program (p: typ program) =
       else
         let inheritance = has_get_parent cdef p.classes in
         if fst inheritance then
-          sub_method_offset metName (snd inheritance) (Deref(tr_e))
+          Deref(sub_method_offset metName (snd inheritance) (Deref(tr_e)))
         else
           failwith "method not found"
     in sub_method_offset metName cdef tr_e

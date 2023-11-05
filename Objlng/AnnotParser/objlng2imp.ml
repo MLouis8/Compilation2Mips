@@ -40,10 +40,10 @@ let translate_program (p: typ program) =
       else
         let inheritance = has_get_parent cdef p.classes in
         if fst inheritance then
-          Deref(sub_method_offset metName (snd inheritance) (Deref(tr_e)))
+          sub_method_offset metName (snd inheritance) (Deref(tr_e))
         else
           failwith "method not found"
-    in sub_method_offset metName cdef tr_e
+    in Deref(sub_method_offset metName cdef tr_e)
   in
   let create_instance (cdef: typ class_def): Imp.expression =
     let rec sum_fields_size (cdef: typ class_def): int =

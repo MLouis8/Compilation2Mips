@@ -35,10 +35,11 @@ type explicit_alloc =
 let allocate_locals fdef =
   let nfdef = Nimp.from_imp_fdef fdef in
   let raw_alloc, r_max, spill_count = Linearscan.lscan_alloc nb_var_regs nfdef in
-  let alloc =
-    failwith "not implemented"
-  in
-  failwith "not implemented"
+  let alloc = Hashtbl.create (List.length fdef.locals + List.length fdef.params) in
+  let fill_alloc name mem = match mem with
+    | Linearscan.RegN  n -> Hashtbl.add alloc name (Reg var_regs.(n))
+    | Linearscan.Spill n -> Hashtbl.add alloc name (Stack (-4*n+2))
+  in Hashtbl.iter fill_alloc raw_alloc; (alloc, spill_count, r_max)
 
 (* Generate Mips code for an Imp function *)
 (* Call frame
@@ -53,10 +54,8 @@ let allocate_locals fdef =
    is reponsible for everything else. *)
 let tr_function fdef =
   (* Allocation info for local variables and function parameters *)
-  (* TODO: replace with an explicit allocation table deduced from [allocate_locals] *)
-  let alloc = Hashtbl.create 16 in
-  List.iteri (fun k id -> Hashtbl.add alloc id (4*(k+1))) fdef.params;
-  List.iteri (fun k id -> Hashtbl.add alloc id (-4*(k+2))) fdef.locals;
+  (* explicit allocation table deduced from [allocate_locals] *)
+  let (alloc, spill_count, r_max) = allocate_locals fdef in
 
   (* Generate Mips code for an Imp expression. The generated code produces the
      result in register $ti, and do not alter registers $tj with j < i. *)
@@ -69,9 +68,12 @@ let tr_function fdef =
     | Cst(n)  -> li ti n
     | Bool(b) -> if b then li ti 1 else li ti 0
     | Var(x) -> 
-      (* TODO: replace to take into account explicit allocation info *)
+      (* take into account explicit allocation info *)
       (match Hashtbl.find_opt alloc x with
-       | Some offset -> lw ti offset(fp)
+       | Some expl_alloc -> begin match expl_alloc with
+          | Reg reg -> move ti reg
+          | Stack s -> lw ti s(fp)
+        end
        | None -> la ti x @@ lw ti 0(ti)) (* non-local assumed to be a valid global *)
     | Binop(bop, e1, e2) ->
        let op = match bop with
@@ -112,10 +114,13 @@ let tr_function fdef =
   and tr_instr = function
     | Putchar(e) -> tr_expr 0 e @@ move a0 t0 @@ li v0 11 @@ syscall
     | Set(x, e) ->
-       (* TODO: replace to take into account explicit allocation info *)
-       let set_code = match Hashtbl.find_opt alloc x with
-         | Some offset -> sw t0 offset(fp)
-         | None -> la t1 x @@ sw t0 0(t1)
+      (* take into account explicit allocation info *)
+      let set_code = match Hashtbl.find_opt alloc x with
+       | Some expl_alloc -> begin match expl_alloc with
+         | Reg reg -> move t0 reg
+         | Stack s -> lw t0 s(fp)
+      end
+       | None -> la t1 x @@ sw t0 0(t1)
        in
        tr_expr 0 e @@ set_code
 
@@ -141,17 +146,24 @@ let tr_function fdef =
     | Return(e) -> tr_expr 0 e @@ addi sp fp (-4) @@ pop ra @@ pop fp @@ jr ra
     | Expr(e) -> tr_expr 0 e
   in
-
+  let push_array a =
+    Array.fold_right (fun ele code -> code @@ push ele) a nop
+  in
+  let pop_array a =
+    Array.fold_right (fun ele code -> code @@ pop ele) a nop
+  in 
   (* Mips code for the function itself. 
      Initialize the stack frame and save callee-saved registers, run the code of 
      the function, then restore callee-saved, clean the stack and returns with a 
      dummy value if no explicit return met. *)
   push fp @@ push ra @@ addi fp sp 4
-  (* TODO: replace the following, to save callee-saved registers and allocate 
-     the right number of slots on the stack for spilled local variables *)
-  @@ addi sp sp (-4 * List.length fdef.locals)
+  (* save callee-saved registers and allocate the right number of slots on the stack for spilled local variables *)
+  
+  @@ push_array var_regs
+  @@ addi sp sp (-4 * (List.length fdef.locals+List.length fdef.params - Array.length var_regs))
   @@ tr_seq fdef.code
-  (* TODO: restore callee-saved registers *)
+  (* restore callee-saved registers *)
+  @@ pop_array var_regs
   @@ addi sp fp (-4) 
   @@ pop ra @@ pop fp @@ li t0 0 @@ jr ra
 

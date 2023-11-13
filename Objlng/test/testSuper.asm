@@ -296,36 +296,26 @@ point3D_sum:
 	lw $t0, 0($t0)
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)
-	li $t0, 8
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, 4($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	lw $t0, 0($t0)
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 4
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, 4($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	lw $t0, 0($t0)
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
 	lw $t0, 12($fp)
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
 	add $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, 4($fp)
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	li $t0, 8
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	lw $t0, 8($fp)
+	lw $t0, 0($t0)
 	lw $t1, 0($sp)
 	addi $sp, $sp, 4
 	add $t0, $t0, $t1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
+	lw $t0, 0($t0)
+	jalr $t0
+	addi $sp, $sp, 8
 	addi $sp, $fp, -4
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4

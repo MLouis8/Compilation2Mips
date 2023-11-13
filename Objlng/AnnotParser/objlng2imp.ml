@@ -15,7 +15,7 @@ let add2env l env =
 let translate_program (p: typ program) =
   let field_offset (f: string) (cdef: typ class_def): Imp.expression =
     let rec sub_field_offset (f: string) (cdef: typ class_def): int * bool =
-      let inheritance = has_get_parent cdef p.classes in 
+      let inheritance = Objlng.has_get_parent cdef p.classes in 
       let parent_offset =
         if fst inheritance then sub_field_offset f (snd inheritance)
         else (4, false)
@@ -30,6 +30,7 @@ let translate_program (p: typ program) =
   let method_offset (metName: string) (cdef: typ class_def) (tr_e: Imp.expression): Imp.expression =
     (* search method offset and searches in parent descriptors if not found:
        for redefined methods, the redefined version is in the current descriptor so will be found before the previous version
+       
      *)
     let rec sub_method_offset (metName: string) (cdef: typ class_def) (tr_e: Imp.expression): Imp.expression =
       let (offset, found) = List.fold_left (
@@ -74,11 +75,21 @@ let translate_program (p: typ program) =
       | Binop(op, e1, e2) -> Binop(tr_op op, tr_expr e1, tr_expr e2)
       | Call(x, l) -> Call(x, List.map tr_expr l)
       | This -> Var ("this")
+      | Super -> Var ("super")
       | NewTab(t, e) -> Alloc(Binop(Mul, tr_expr e, Cst (typ2byt te.annot)))
       | Read m -> Deref(tr_mem m)
       | MCall(e2, x2, l) ->
-        let tr_e = tr_expr e2 in DCall(method_offset x2 (find_class e2.annot p.classes) tr_e, tr_e :: List.map tr_expr l)
-      | _ -> failwith ("Expr not catch: "^expr_to_string te)
+        let tr_e = tr_expr e2 in
+        let tr_e_arg: Imp.expression = match tr_e with
+          | Imp.Var x -> if x = "super" then Var "this" else Var x
+          | smth -> smth        
+        in
+        let clsse = find_class e2.annot p.classes in begin
+          match clsse.parent with
+            | Some parent -> DCall(method_offset x2 clsse tr_e, tr_e_arg :: Var (parent^"_descr_ptr") :: List.map tr_expr l)
+            | None -> DCall(method_offset x2 clsse tr_e, tr_e_arg :: List.map tr_expr l)
+          end
+      | _ -> failwith ("Expr not caught: "^expr_to_string te)
     and tr_mem: typ mem -> Imp.expression = function
       | Atr(e, x) -> Binop(Add, tr_expr e, field_offset x (find_class e.annot p.classes))
       | Arr(e1, e2) -> Imp.array_access (tr_expr e1) (tr_expr e2)
@@ -94,10 +105,24 @@ let translate_program (p: typ program) =
       | Set(x1, e) -> begin match e.expr with
         | New(x2, l) -> let cdef = find_class (TClass x2) p.classes in
           let instance = create_instance cdef in
-          Seq([Imp.Set(x1, instance); Write(Var x1, Var (x2^"_descr")); Expr(Call(x2 ^ "_constructor", Var x1 :: List.map tr_expr l))])
+          let this_super: Imp.expression list = match cdef.parent with
+            | Some parent -> Var x1 :: Var (parent^"_descr_ptr") :: []
+            | None -> Var x1 :: []
+          in 
+          Seq([
+            Imp.Set(x1, instance);
+            Write(Var x1, Var (x2^"_descr"));
+            Expr(Call(x2 ^ "_constructor", this_super @ List.map tr_expr l))
+          ])
         | Call(x2, l) -> Set(x1, Call(x2, List.map tr_expr l))
         | MCall(e2, x2, l) ->
-          let tr_e = tr_expr e2 in Set(x1, DCall(method_offset x2 (find_class e2.annot p.classes) tr_e, tr_e :: List.map tr_expr l))
+          let tr_e = tr_expr e2 in
+          let clsse = find_class e2.annot p.classes in begin
+          match clsse.parent with
+            | Some parent -> Set(x1, DCall(method_offset x2 clsse tr_e, tr_e :: Var (parent^"_descr_ptr") :: List.map tr_expr l))
+            | None ->
+              Set(x1, DCall(method_offset x2 clsse tr_e, tr_e :: List.map tr_expr l))
+          end
         | _ -> Set(x1, tr_expr e)
       end
       | Write(m, e) -> Write(tr_mem m, tr_expr e)
@@ -111,13 +136,18 @@ let translate_program (p: typ program) =
   (* modifying methods in class_definitions:
       - changing the constructor (adding "this" param)
       - changing method name (adding class name)
+      - adding "super" parameter in case it's an extension
     *)
   let rectify_methods (cdef: typ class_def): typ class_def =
     let mets = List.map (
       fun (met: typ function_def): typ function_def ->
+        let parameters = match cdef.parent with
+          | Some parent -> ("this", TClass cdef.name)::("super", TClass parent)::met.params
+          | None -> ("this", TClass cdef.name)::met.params
+        in
         {
           name=cdef.name^"_"^met.name;
-          params=("this", TVoid)::met.params;
+          params=parameters;
           locals=met.locals;
           code=met.code;
           return=met.return;
@@ -132,6 +162,7 @@ let translate_program (p: typ program) =
   (* creating a class descriptor: 
     - we choose to make it as a function called in main 
     - contains only explicitely defined methods (inheritated methods are accessed through parent class_descriptor)
+    - contains also the declaration of a pointer to the pointer of the class descriptor for super
    *)
   let tr_c_descriptor (cdef: typ class_def): Imp.function_def =
     let descr_name: string = cdef.name^"_descr" in
@@ -143,7 +174,20 @@ let translate_program (p: typ program) =
     in
     let parent: Imp.expression = if fst inheritance then Var((snd inheritance).name^"_descr") else Cst 0
     in
-    let code = [Imp.Set(descr_name, Imp.Alloc(Cst ((List.length cdef.methods+1) * 4))); Imp.Write(Var descr_name, parent)] @ methods
+    let code =
+      match cdef.parent with
+        | Some p -> 
+          [
+            Imp.Set(p^"_descr_ptr", Imp.Alloc(Cst 4));
+            Imp.Write(Var (p^"_descr_ptr"), Var (p^"_descr"));
+            Imp.Set(descr_name, Imp.Alloc(Cst ((List.length cdef.methods+1) * 4)));
+            Imp.Write(Var descr_name, parent)
+          ] @ methods
+        | None ->
+          [
+            Imp.Set(descr_name, Imp.Alloc(Cst ((List.length cdef.methods+1) * 4)));
+            Imp.Write(Var descr_name, parent);
+          ] @ methods
     in
     { name=cdef.name^"_descriptor"; params=[]; locals=[]; code=code }
   in
@@ -158,5 +202,13 @@ let translate_program (p: typ program) =
   in
   let class_descriptors = List.map tr_c_descriptor p.classes
   in
-  { Imp.globals = List.map fst p.globals @ List.map (fun (c: typ class_def) -> c.name^"_descr") p.classes;
+  let class_global_var classes =
+    List.fold_left (fun l c ->
+        match c.parent with
+          | Some parent -> (c.name^"_descr") :: (parent^"_descr_ptr") :: l
+          | None -> (c.name^"_descr") :: l
+      ) [] classes
+  in
+  { Imp.globals =
+      List.map fst p.globals @ class_global_var p.classes;
     Imp.functions = class_descriptors @ List.flatten (List.map tr_cdef_methods p.classes) @ List.map (fun f -> tr_functions f class_descriptors) p.functions; }

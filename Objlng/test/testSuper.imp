@@ -40,7 +40,7 @@ function point3D_constructor(this, super, x, y, z) {
 
 function point3D_sum(this, super, x) {
   
-  return((((x + *(this + 4)) + *(this + 8)) + *(this + 12)));
+  return(*(*super + 8)(this, (x + *(this + 12))));
 }
 
 function main() {

@@ -41,15 +41,16 @@ let liveness_intervals_from_liveness fdef =
   (* for each variable [x], create the smallest interval that contains all
      the numbers of instructions where [x] is live *)
   let liveness_interval (var: string) (live: VSet.t array): int*int =
-    let (_, lower_b, upper_b) = (Array.fold_left (
-      fun (id, lower_b, upper_b: int*int*int) (instr_set: VSet.t) ->
-        if VSet.exists (fun x -> x = var) instr_set then
-          if upper_b = Array.length live then (id-1, lower_b, id)
-          else (id-1, lower_b, upper_b)
-        else if lower_b = 0
-          then (id-1, id, upper_b)
-          else (id-1, lower_b, upper_b)
-    ) (Array.length live-1, 0, Array.length live) live)
+    let (_, lower_b, upper_b, _) =
+      (Array.fold_left 
+        (fun (id, lower_b, upper_b, flag: int*int*int*bool) (instr_set: VSet.t) ->
+          if VSet.exists (fun x -> x = var) instr_set then
+            if lower_b = 0 then (id+1, id, upper_b, true)
+            else (id+1, lower_b, upper_b, true)
+          else if upper_b = Array.length live-1 && flag
+            then (id+1, lower_b, id, flag)
+            else (id+1, lower_b, upper_b, flag)
+      ) (0, 0, Array.length live-1, false) live)
     in (lower_b, upper_b)
   in
   let variables = fdef.locals@fdef.params in

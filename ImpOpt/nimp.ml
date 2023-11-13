@@ -42,7 +42,7 @@ and max_instr_list = function
     | i::l -> max (max_instr i) (max_instr_list l)
 
 let from_imp_fdef fdef =
-  (* Printf.printf "numbering %s..." Imp.(fdef.name); *)
+  Printf.printf "numbering %s..." Imp.(fdef.name);
   let cpt = ref (-1) in
   let new_lbl () = incr cpt; !cpt in
   let rec from_imp_instr = function
@@ -61,7 +61,7 @@ let from_imp_fdef fdef =
     | i::l -> let i = from_imp_instr i in i :: from_imp_list l
   in
   let code = from_imp_list Imp.(fdef.code) in
-  (* Printf.printf " ok, max %d\n" (max_instr_list code); *)
+  Printf.printf " ok, max %d\n" (max_instr_list code);
   { name = Imp.(fdef.name);
     code = code;
     params = Imp.(fdef.params);

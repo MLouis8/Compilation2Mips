@@ -1,0 +1,21 @@
+function main() {
+    var b1;
+    var a1;
+    var c1;
+    var b2;
+    var a2;
+    var c2;
+    var b3;
+    var a3;
+    var c3;
+    var b4;
+    var a4;
+    var c4;
+    c1 = 1;
+    a1 = 2;
+    b1 = 4;
+    a4 = 6;
+    c4 = 8;
+    b3 = -2;
+    putchar(48 + a1 + b3 + c4); //prints 8
+}

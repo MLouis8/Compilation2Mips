@@ -52,7 +52,7 @@ let lscan_alloc nb_regs fdef =
         (* ... then allocate one *)
         (* otherwise, may replace an already used register if this can
            make this register available again earlier *)
-      active := expire hi live_intervals;
+      active := expire li live_intervals;
       match !free with
         | [] -> 
           Hashtbl.add alloc xi (Spill !spill_count);

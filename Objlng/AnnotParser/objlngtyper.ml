@@ -139,5 +139,5 @@ let type_program (p: 'a program): typ program =
     { cdef with methods = List.map (fun met -> type_fdef tenv met) cdef.methods }
   in
   { globals=p.globals;
-    functions=List.map (type_fdef Env.empty) p.functions;
+    functions=List.map (type_fdef tenv) p.functions;
     classes=List.map type_cdef p.classes }

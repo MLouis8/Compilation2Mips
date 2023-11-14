@@ -80,7 +80,7 @@ type 'a class_def = {
 let find_class (t: typ) (classes: 'a class_def list): 'a class_def =
   match t with
   | TClass cname -> List.find (fun (cdef: 'a class_def) -> cdef.name = cname) classes
-  | _ -> failwith "class not found"
+  | _ -> failwith ("class not found: "^(typ_to_string t))
 
 let has_get_parent (cdef: 'a class_def) (classes: 'a class_def list): bool * 'a class_def =
   match cdef.parent with

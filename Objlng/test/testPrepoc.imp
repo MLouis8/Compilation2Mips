@@ -1,0 +1,42 @@
+var point_descr;
+
+function point_descriptor() {
+  
+  point_descr = alloc(12);
+  *point_descr = 0;
+  *(point_descr + 4) = &point_constructor;
+  *(point_descr + 8) = &point_sum;
+}
+
+function point_constructor(this, x, y) {
+  
+  *(this + 4) = x;
+  *(this + 8) = y;
+}
+
+function point_sum(this, x) {
+  
+  return(((x + *(this + 4)) + *(this + 8)));
+}
+
+function main() {
+  var c_temp1_temp;
+  var c_temp2_temp;
+  var c_temp2;
+  var c_temp1;
+  var c;
+  
+  point_descriptor();
+  c_temp1_temp = alloc(12);
+  *c_temp1_temp = point_descr;
+  point_constructor(c_temp1_temp, 1, 2);
+  c_temp1 = *(*c_temp1_temp + 8)(c_temp1_temp, 48);
+  c_temp2_temp = alloc(12);
+  *c_temp2_temp = point_descr;
+  point_constructor(c_temp2_temp, 4, 0);
+  c_temp2 = *(*c_temp2_temp + 8)(c_temp2_temp, 1);
+  c = (c_temp1 + c_temp2);
+  putchar(c);
+}
+
+

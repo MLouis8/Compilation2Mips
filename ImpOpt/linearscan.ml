@@ -35,18 +35,20 @@ let lscan_alloc nb_regs fdef =
   let spill_count = ref 0 in (* number of spilled variables *)
   (* free registers allocated to intervals that stop before timestamp a,
      returns remaining intervals *)
-  let rec expire a l = match l with
+  let rec expire a l =
+    match l with
     | [] -> []
     | (var, _, upper) :: t when upper < a -> begin
       match Hashtbl.find alloc var with
-      | RegN r -> free := r :: !free; expire a t
-      | Spill _ -> failwith "Error: should be assigned to a register" 
+        | RegN r -> free := r :: !free; expire a t
+        | Spill _ -> failwith "Error: should be assigned to a register"
     end
     | h :: t -> h :: expire a t
   in
   (* for each interval i, in sorted order *)
   List.iter (fun i ->
       let xi, li, hi = i in
+      Printf.printf "interval of: %s, li: %d; hi: %d\n" xi li hi;
       (* free registers that expire before the lower bound of i *)
       (* if there are available registers *)
         (* ... then allocate one *)

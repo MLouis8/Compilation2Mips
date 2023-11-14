@@ -386,13 +386,7 @@ main:
 	addi $sp, $sp, 0
 	jal point3D_descriptor
 	addi $sp, $sp, 0
-	li $t0, 8
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 4
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
+	li $t0, 12
 	move $a0, $t0
 	li $v0, 9
 	syscall
@@ -417,13 +411,7 @@ main:
 	sw $t0, 0($sp)
 	jal point2D_constructor
 	addi $sp, $sp, 12
-	li $t0, 12
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 4
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
+	li $t0, 16
 	move $a0, $t0
 	li $v0, 9
 	syscall
@@ -473,13 +461,7 @@ main:
 	move $a0, $t0
 	li $v0, 11
 	syscall
-	li $t0, 12
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 4
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
+	li $t0, 16
 	move $a0, $t0
 	li $v0, 9
 	syscall
@@ -567,7 +549,7 @@ atoi_error:
 atoi_end:
 	jr $ra
 .data
-point2D_descr:
-	.word 0
 point3D_descr:
+	.word 0
+point2D_descr:
 	.word 0

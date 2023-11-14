@@ -36,6 +36,7 @@ and 'a expr =
   | NewTab of typ * 'a expression (* create an array of the given type and size *)
   | Read  of 'a mem               (* read in memory *)
   | This (* current object *)
+  | Super (* parent object *)
 and 'a mem =
   | Arr of 'a expression * 'a expression (* array access     e1[e2]  *)
   | Atr of 'a expression * string        (* attribute access  o.x    *)

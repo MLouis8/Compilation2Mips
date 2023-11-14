@@ -56,7 +56,6 @@ let tr_function fdef =
   (* Allocation info for local variables and function parameters *)
   (* explicit allocation table deduced from [allocate_locals] *)
   let (alloc, spill_count, r_max) = allocate_locals fdef in
-
   (* Generate Mips code for an Imp expression. The generated code produces the
      result in register $ti, and do not alter registers $tj with j < i. *)
   let rec tr_expr i e =
@@ -67,14 +66,14 @@ let tr_function fdef =
     match e with
     | Cst(n)  -> li ti n
     | Bool(b) -> if b then li ti 1 else li ti 0
-    | Var(x) -> 
+    | Var(x) -> Printf.printf "searching for Var(%s)" x;
       (* take into account explicit allocation info *)
       (match Hashtbl.find_opt alloc x with
        | Some expl_alloc -> begin match expl_alloc with
           | Reg reg -> move ti reg
           | Stack s -> lw ti s(fp)
         end
-       | None -> la ti x @@ lw ti 0(ti)) (* non-local assumed to be a valid global *)
+       | None -> Printf.printf "Var(x) not found, must be global"; la ti x @@ lw ti 0(ti)) (* non-local assumed to be a valid global *)
     | Binop(bop, e1, e2) ->
        let op = match bop with
          | Add -> add
@@ -107,13 +106,15 @@ let tr_function fdef =
   in
 
   (* Generate MIPS code for an Imp instruction or sequence. *)
-  let rec tr_seq = function
+  let rec tr_seq =
+    function
     | []   -> nop
     | i::s -> tr_instr i @@ tr_seq s
 
   and tr_instr = function
-    | Putchar(e) -> tr_expr 0 e @@ move a0 t0 @@ li v0 11 @@ syscall
+    | Putchar(e) -> Printf.printf "translating putchar"; tr_expr 0 e @@ move a0 t0 @@ li v0 11 @@ syscall
     | Set(x, e) ->
+      Printf.printf "translating Set: %s" x;
       (* take into account explicit allocation info *)
       let set_code = match Hashtbl.find_opt alloc x with
        | Some expl_alloc -> begin match expl_alloc with
@@ -144,26 +145,19 @@ let tr_function fdef =
 
     (* Return from a call with a value. Includes cleaning the stack. *)
     | Return(e) -> tr_expr 0 e @@ addi sp fp (-4) @@ pop ra @@ pop fp @@ jr ra
-    | Expr(e) -> tr_expr 0 e
+    | Expr(e) -> Printf.printf "translating expr"; tr_expr 0 e
   in
-  let push_array a =
-    Array.fold_right (fun ele code -> code @@ push ele) a nop
-  in
-  let pop_array a =
-    Array.fold_right (fun ele code -> code @@ pop ele) a nop
-  in 
   (* Mips code for the function itself. 
      Initialize the stack frame and save callee-saved registers, run the code of 
      the function, then restore callee-saved, clean the stack and returns with a 
      dummy value if no explicit return met. *)
   push fp @@ push ra @@ addi fp sp 4
   (* save callee-saved registers and allocate the right number of slots on the stack for spilled local variables *)
-  
-  @@ push_array var_regs
+  @@ save_tmp (Array.length tmp_regs)
   @@ addi sp sp (-4 * (List.length fdef.locals+List.length fdef.params - Array.length var_regs))
   @@ tr_seq fdef.code
   (* restore callee-saved registers *)
-  @@ pop_array var_regs
+  @@ restore_tmp (Array.length tmp_regs)
   @@ addi sp fp (-4) 
   @@ pop ra @@ pop fp @@ li t0 0 @@ jr ra
 
@@ -193,5 +187,4 @@ let translate_program prog =
       (fun code id -> code @@ label id @@ dword [0])
       nop prog.globals
   in
-  
   { text; data }

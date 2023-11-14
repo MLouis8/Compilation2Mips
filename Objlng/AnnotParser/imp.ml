@@ -41,6 +41,11 @@ let e = Binop(Mul,
 let array_offset t i = Binop(Add, t, Binop(Mul, Cst 4, i))
 let array_access t i = array_offset t i
 
+let expr_to_string (expr: expression) = match  expr with
+  | Call(_) -> "Call"
+  | Var x -> "Var "^x
+  | _ -> "smth else"
+
 (**
    Data structure for instructions
 *)

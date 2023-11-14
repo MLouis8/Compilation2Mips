@@ -99,6 +99,7 @@ let type_program (p: 'a program): typ program =
       | NewTab(t, e)      -> mk_expr (TArray t) (NewTab(t, check (type_expr e) TInt))
       | Read(m)           -> let (t1, t2) = type_mem m in mk_expr t1 (Read(t2))
       | This              -> mk_expr (Env.find "_this" tenv) This
+      | Super             -> mk_expr (Env.find "_super" tenv) Super
     and type_mem: 'a mem -> typ * typ mem = function
       | Arr(e1, e2) -> 
         let t1 = type_expr e1 in begin
@@ -130,6 +131,11 @@ let type_program (p: 'a program): typ program =
     in
     let type_cdef (cdef: 'a class_def): typ class_def =
     let tenv = Env.add "_this" (TClass cdef.name)  tenv in
+    let tenv =
+      match cdef.parent with
+        | Some p -> Env.add "_super" (TClass p) tenv 
+        | None -> tenv
+    in
     { cdef with methods = List.map (fun met -> type_fdef tenv met) cdef.methods }
   in
   { globals=p.globals;

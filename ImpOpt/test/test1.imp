@@ -1,0 +1,9 @@
+function main() {
+    var a;
+    var b;
+    var c;
+    a = 1;
+    b = 2;
+    c = 4;
+    putchar(48 + a + b + c); //prints 7
+}

@@ -1,5 +1,5 @@
-var point2D_descr;
 var point3D_descr;
+var point2D_descr;
 
 function point2D_descriptor() {
   
@@ -50,15 +50,15 @@ function main() {
   
   point2D_descriptor();
   point3D_descriptor();
-  p1 = alloc((4 + 8));
+  p1 = alloc(12);
   *p1 = point2D_descr;
   point2D_constructor(p1, 1, 8);
-  p2 = alloc((4 + 12));
+  p2 = alloc(16);
   *p2 = point3D_descr;
   point3D_constructor(p2, 0, 0, 0);
   c = *(*p1 + 8)(p1, 48);
   putchar(c);
-  p3 = alloc((4 + 12));
+  p3 = alloc(16);
   *p3 = point3D_descr;
   point3D_constructor(p3, 1, 4, 2);
   *(*p2 + 8)(p2, p3);

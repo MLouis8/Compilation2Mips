@@ -17,7 +17,7 @@
 %token <string> IDENT
 %token TYP_INT TYP_BOOL TYP_VOID
 %token VAR FUNCTION
-%token ATTRIBUTE METHOD EXTENDS CLASS THIS
+%token ATTRIBUTE METHOD EXTENDS CLASS THIS SUPER
 %token DOT NEW LBRACKET RBRACKET
 %token LPAR RPAR BEGIN END COMMA SEMI
 %token PUTCHAR SET IF ELSE WHILE RETURN
@@ -124,6 +124,7 @@ expression:
 | NEW LBRACKET ty=typ COMMA e=expression RBRACKET { mk_expr () (NewTab(ty, e)) }
 | m=mem_access { mk_expr () (Read m) }
 | THIS { mk_expr () (This) }
+| SUPER { mk_expr () (Super) }
 ;
 
 %inline binop:

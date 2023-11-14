@@ -32,30 +32,11 @@ let preprocess_program (p: typ program): typ program =
     | TClass name -> name
     | _ -> assert false
   in
-  (* typing a function definition *)
+  (* preprocessing a function definition *)
   let preprocess_fdef (tenv: tenv) (fdef: typ function_def): typ function_def =
     (* add local elements to the environments *)
     let tenv = add2env fdef.locals tenv in
-    let tenv = add2env fdef.params tenv in
-
-    (* checks if the attribute exists in the class_definition or in a parent class_defition and returns the attribute type *)
-    let check_inherited_atr (attr: string) (cdef: typ class_def): typ =
-      let find_attr cdef =
-        try snd (List.find (fun f -> fst f = attr) cdef.fields) 
-        with Not_found -> TVoid
-      in
-      let rec sub_check (attr: string) (cdef: typ class_def): typ =
-        let inheritance = has_get_parent cdef p.classes in 
-        if fst inheritance then
-          match sub_check attr (snd inheritance) with
-          | TVoid -> find_attr cdef
-          | t     -> t
-        else
-          find_attr cdef
-      in
-      let res = try sub_check attr cdef with Not_found -> failwith "attribute not found" in 
-      if res = TVoid then failwith "attribute not found in parent" else res
-    in
+    let tenv = add2env fdef.params tenv in  
 
     (* search if a method exist in the class_definition or in a parent class_definition and returns the method definition *)
     let find_inherited_met (met_name:string) (cdef: typ class_def): typ function_def =
@@ -74,11 +55,11 @@ let preprocess_program (p: typ program): typ program =
       with Not_found -> failwith "method not found"
     in
 
-    (* type expressions *)
+    (* preprocess expressions *)
     let rec preprocess_expr (e: typ expression): typ expression = match e.expr with
-      | Cst n             -> mk_expr e.annot (Cst n)
-      | Bool b            -> mk_expr e.annot (Bool b)
-      | Var x             -> mk_expr e.annot (Var x)
+      | Cst n             -> e
+      | Bool b            -> e
+      | Var x             -> e
       | Binop(op, e1, e2) -> mk_expr e.annot (Binop(op, preprocess_expr e1, preprocess_expr e2))
       | Call(x, l)        -> let f = rtrv_func x in
       let _ = List.iter2 (fun arg1 arg2 -> let _ = preprocess_expr arg1 in ()) l f.params in
@@ -90,34 +71,26 @@ let preprocess_program (p: typ program): typ program =
         mk_expr e.annot (MCall(processed_e, x, processed_l))
       | New(x, l)         -> mk_expr e.annot (New(x, List.map preprocess_expr l))
       | NewTab(t, e)      -> mk_expr e.annot (NewTab(t, preprocess_expr e))
-      | Read(m)           -> let (t1, t2) = preprocess_mem m in mk_expr t1 (Read(t2))
+      | Read(m)           -> mk_expr e.annot (Read(preprocess_mem m))
       | This              -> mk_expr (Env.find "_this" tenv) This
-    and preprocess_mem: 'a mem -> typ * typ mem = function
-      | Arr(e1, e2) -> 
-        let t1 = preprocess_expr e1 in begin
-          match t1.annot with
-          | TArray t -> (t, Arr(t1, preprocess_expr e2))
-          | _        -> failwith "type error, should be an array here" end
-      | Atr(e, x) ->
-        let t = preprocess_expr e in
-        match t.annot with
-        | TClass cname -> begin
-          let cdef = find_class (TClass cname) p.classes in
-          (check_inherited_atr x cdef, Atr(t, x))
-        end
-        | _ -> failwith "type error, the expression must be a class"  
+    and preprocess_mem: typ mem -> typ mem = function
+      | Arr(e1, e2) -> Arr(preprocess_expr e1, preprocess_expr e2)
+      | Atr(e, x) -> Atr(preprocess_expr e, x)
     in
-
-    (* type instructions *)
+    let rec preprocess x e = failwith "not implemented" in
+    (* preprocess instructions *)
     let rec preprocess_seq (s: 'a Objlng.sequence): typ Objlng.sequence = List.map preprocess_instr s
     and preprocess_instr: 'a Objlng.instruction -> typ Objlng.instruction = function
       | Putchar e     -> Putchar (preprocess_expr e)
-      | Set(x, e)     -> Set (x, preprocess_expr e)
+      | Set(x, e)     -> 
+        match e.expr with
+          | Binop(op, e1, e2) | MCall(e, x, l) | Call(x, l) -> preprocess x e
+          | _ -> Set (x, preprocess_expr e)
       | If(b, s1, s2) -> If (preprocess_expr b, preprocess_seq s1, preprocess_seq s2)
       | While(e, s)   -> While (preprocess_expr e, preprocess_seq s)
       | Return e      -> Return (preprocess_expr e)
       | Expr e        -> Expr (preprocess_expr e)
-      | Write(m, e)   -> let _, tm = preprocess_mem m in Write(tm, (preprocess_expr e))
+      | Write(m, e)   -> Write(preprocess_mem m, (preprocess_expr e))
     in
     { fdef with code = preprocess_seq fdef.code }
     in

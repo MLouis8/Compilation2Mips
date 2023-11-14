@@ -54,43 +54,26 @@ let preprocess_program (p: typ program): typ program =
       try sub_check met_name cdef
       with Not_found -> failwith "method not found"
     in
-
-    (* preprocess expressions *)
-    let rec preprocess_expr (e: typ expression): typ expression = match e.expr with
-      | Cst n             -> e
-      | Bool b            -> e
-      | Var x             -> e
-      | Binop(op, e1, e2) -> mk_expr e.annot (Binop(op, preprocess_expr e1, preprocess_expr e2))
-      | Call(x, l)        -> let f = rtrv_func x in
-      let _ = List.iter2 (fun arg1 arg2 -> let _ = preprocess_expr arg1 in ()) l f.params in
-      mk_expr e.annot (Call(x, List.map preprocess_expr l))
-      | MCall(e, x, l)    ->
-        let processed_e = preprocess_expr e in
-        let met = find_inherited_met x (rtrv_class (rtrv_c_name processed_e.annot)) in
-        let processed_l = List.map2 (fun arg param -> preprocess_expr arg) l met.params in
-        mk_expr e.annot (MCall(processed_e, x, processed_l))
-      | New(x, l)         -> mk_expr e.annot (New(x, List.map preprocess_expr l))
-      | NewTab(t, e)      -> mk_expr e.annot (NewTab(t, preprocess_expr e))
-      | Read(m)           -> mk_expr e.annot (Read(preprocess_mem m))
-      | This              -> mk_expr (Env.find "_this" tenv) This
-    and preprocess_mem: typ mem -> typ mem = function
-      | Arr(e1, e2) -> Arr(preprocess_expr e1, preprocess_expr e2)
-      | Atr(e, x) -> Atr(preprocess_expr e, x)
+    let rec preprocess x e = match e.expr with
+    | Binop(op, e1, e2) -> Binop(op, e1, e2)
+    | MCall(e1, x, l) -> 
+    | Call(x, l) -> 
+    | _ -> e
     in
-    let rec preprocess x e = failwith "not implemented" in
     (* preprocess instructions *)
     let rec preprocess_seq (s: 'a Objlng.sequence): typ Objlng.sequence = List.map preprocess_instr s
     and preprocess_instr: 'a Objlng.instruction -> typ Objlng.instruction = function
-      | Putchar e     -> Putchar (preprocess_expr e)
-      | Set(x, e)     -> 
+      | Putchar e     -> Putchar (e)
+      | Set(x, e)     -> begin
         match e.expr with
-          | Binop(op, e1, e2) | MCall(e, x, l) | Call(x, l) -> preprocess x e
-          | _ -> Set (x, preprocess_expr e)
-      | If(b, s1, s2) -> If (preprocess_expr b, preprocess_seq s1, preprocess_seq s2)
-      | While(e, s)   -> While (preprocess_expr e, preprocess_seq s)
-      | Return e      -> Return (preprocess_expr e)
-      | Expr e        -> Expr (preprocess_expr e)
-      | Write(m, e)   -> Write(preprocess_mem m, (preprocess_expr e))
+          | Binop _ | MCall _ | Call _ -> preprocess x e
+          | _ -> Set (x, e)
+      end
+      | If(b, s1, s2) -> If (b, preprocess_seq s1, preprocess_seq s2)
+      | While(e, s)   -> While (e, preprocess_seq s)
+      | Return e      -> Return e
+      | Expr e        -> Expr e
+      | Write(m, e)   -> Write(m, e)
     in
     { fdef with code = preprocess_seq fdef.code }
     in

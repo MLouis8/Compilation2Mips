@@ -377,7 +377,7 @@ inheritance is already present.
 - produce a helpful message when the typer uncovers a typing error
   (for instance: in case of an attempt to access an attribute that does
   not exist in the considered class, produce a message that names the class
-  and the missing attribute)
+  and the missing attribute) Done
 
 - add an expression [obj instanceof C], that tests whether the object [obj]
   is from a class [C'] that is a subclass of [C] (or [C] itself)

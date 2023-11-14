@@ -37,16 +37,24 @@ and 'a expr =
   | Read  of 'a mem               (* read in memory *)
   | This (* current object *)
   | Super (* parent object *)
+  | Instanceof of 'a expression * string (* is obj from class c *)
 and 'a mem =
   | Arr of 'a expression * 'a expression (* array access     e1[e2]  *)
   | Atr of 'a expression * string        (* attribute access  o.x    *)
 
 let expr_to_string (expr: typ expression) = match  expr.expr with
-  | Call(_) -> "Call"
-  | MCall(_) -> "MCall"
-  | New(_) -> "New"
-  | Read(_) -> "Read"
-  | _ -> "smth else"
+  | Cst _ -> "Cst"
+  | Bool _ -> "Bool"
+  | Var _ -> "Var"
+  | Binop _ -> "Binop"
+  | Call _ -> "Call"
+  | MCall _ -> "MCall"
+  | New _ -> "New"
+  | NewTab _ -> "Newtab"
+  | Read _ -> "Read"
+  | This -> "This"
+  | Super -> "Super"
+  | Instanceof _ -> "Instanceof"
 
 let mk_expr a e = { annot=a; expr=e }
 

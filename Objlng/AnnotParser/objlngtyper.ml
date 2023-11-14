@@ -14,8 +14,6 @@ let check te t =
 let add2env l env = 
   List.fold_left (fun env (x, t) -> Env.add x t env) env l
 
-exception Error_msg of string
-
 (* typing a program *)
 let type_program (p: 'a program): typ program =
 
@@ -26,12 +24,12 @@ let type_program (p: 'a program): typ program =
 
   let rtrv_func x =
     try Env.find x fenv
-    with Not_found -> raise (Error_msg "function not found while calling")
+    with Not_found -> failwith ("function "^x^" not found while calling")
   in
 
   let rtrv_class x =
     try Env.find x cenv
-    with Not_found -> raise (Error_msg "class not found in class environement")
+    with Not_found -> failwith ("class "^x^" not found in class environement")
   in
 
   (* typing a function definition *)
@@ -55,10 +53,12 @@ let type_program (p: 'a program): typ program =
         else
           find_attr cdef
       in
-      let res = try sub_check attr cdef with Not_found -> failwith "attribute not found" in 
-      if res = TVoid then failwith "attribute not found in parent" else res
+      let res = sub_check attr cdef in 
+      if res = TVoid then
+        failwith ("attribute "^attr^" not found in class "^cdef.name^" or its parents")
+      else
+        res
     in
-
     (* search if a method exist in the class_definition or in a parent class_definition and returns the method definition *)
     let find_inherited_met (met_name:string) (cdef: unit class_def): unit function_def =
       let find_met cdef =
@@ -73,7 +73,7 @@ let type_program (p: 'a program): typ program =
           find_met cdef
       in
       try sub_check met_name cdef
-      with Not_found -> failwith "method not found"
+      with Not_found -> failwith ("method "^met_name^" not found in class "^cdef.name^" or its parents")
     in
 
     (* type expressions *)
@@ -100,6 +100,7 @@ let type_program (p: 'a program): typ program =
       | Read(m)           -> let (t1, t2) = type_mem m in mk_expr t1 (Read(t2))
       | This              -> mk_expr (Env.find "_this" tenv) This
       | Super             -> mk_expr (Env.find "_super" tenv) Super
+      | Instanceof(obj, c)-> let _ = rtrv_class c in mk_expr TBool (Instanceof(type_expr e, c))
     and type_mem: 'a mem -> typ * typ mem = function
       | Arr(e1, e2) -> 
         let t1 = type_expr e1 in begin

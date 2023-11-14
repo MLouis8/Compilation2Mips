@@ -89,6 +89,7 @@ let translate_program (p: typ program) =
             | Some parent -> DCall(method_offset x2 clsse tr_e, tr_e_arg :: Var (parent^"_descr_ptr") :: List.map tr_expr l)
             | None -> DCall(method_offset x2 clsse tr_e, tr_e_arg :: List.map tr_expr l)
           end
+      | Instanceof(obj, c) -> failwith "not implemented"
       | _ -> failwith ("Expr not caught: "^expr_to_string te)
     and tr_mem: typ mem -> Imp.expression = function
       | Atr(e, x) -> Binop(Add, tr_expr e, field_offset x (find_class e.annot p.classes))

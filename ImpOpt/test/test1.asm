@@ -15,46 +15,37 @@ main:
 	sw $ra, 0($sp)
 	addi $fp, $sp, 4
 	subi $sp, $sp, 4
-	sw $s7, 0($sp)
-	subi $sp, $sp, 4
-	sw $s6, 0($sp)
-	subi $sp, $sp, 4
-	sw $s5, 0($sp)
-	subi $sp, $sp, 4
-	sw $s4, 0($sp)
-	subi $sp, $sp, 4
-	sw $s3, 0($sp)
-	subi $sp, $sp, 4
-	sw $s2, 0($sp)
-	subi $sp, $sp, 4
-	sw $s1, 0($sp)
-	subi $sp, $sp, 4
 	sw $s0, 0($sp)
-	addi $sp, $sp, 20
+	addi $sp, $sp, -8
 	li $t0, 1
-	move $t0, $s2
+	move $s0, $t0
 	li $t0, 2
-	move $t0, $s1
+	move $s1, $t0
 	li $t0, 4
-	move $t0, $s0
+	move $s2, $t0
 	li $t0, 48
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	move $t0, $s0
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	move $t0, $s1
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
+	subi $sp, $sp, 4
+	sw $t0, 0($sp)
+	move $t0, $s2
+	lw $t1, 0($sp)
+	addi $sp, $sp, 4
+	add $t0, $t0, $t1
 	move $a0, $t0
 	li $v0, 11
 	syscall
-	lw $s7, 0($sp)
-	addi $sp, $sp, 4
-	lw $s6, 0($sp)
-	addi $sp, $sp, 4
-	lw $s5, 0($sp)
-	addi $sp, $sp, 4
-	lw $s4, 0($sp)
-	addi $sp, $sp, 4
-	lw $s3, 0($sp)
-	addi $sp, $sp, 4
-	lw $s2, 0($sp)
-	addi $sp, $sp, 4
-	lw $s1, 0($sp)
-	addi $sp, $sp, 4
+	addi $sp, $sp, 8
 	lw $s0, 0($sp)
 	addi $sp, $sp, 4
 	addi $sp, $fp, -4

@@ -59,10 +59,15 @@ let lscan_alloc nb_regs fdef =
         | [] -> 
           Hashtbl.add alloc xi (Spill !spill_count);
           spill_count := !spill_count + 1
-        | h :: t -> 
+        | h :: t ->
           Hashtbl.add alloc xi (RegN h);
           free := t;
           active := insert_active (xi, li, hi) !active;
           r_max := if h > !r_max then h else !r_max
     ) (sort_intervals live_intervals);
+  Hashtbl.iter (fun x raw ->
+    match raw with
+      | RegN  n -> Printf.printf "Reg(%d) -> %s\n" n x
+      | Spill n -> Printf.printf "Spill(%d) -> %s\n" n x
+  ) alloc;
   alloc, !r_max, !spill_count

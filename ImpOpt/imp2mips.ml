@@ -20,7 +20,7 @@ let push reg = subi sp sp 4 @@ sw reg 0(sp)
 let pop  reg = lw reg 0(sp) @@ addi sp sp 4
 
 let rec    save regs k = if k < 0 then nop else save regs (k-1) @@ push regs.(k)
-let rec restore regs k = if k < 0 then nop else    pop regs.(k) @@ restore regs (k-1)
+let rec restore regs k = if k < 0 then nop else pop  regs.(k) @@ restore regs (k-1)
 
 let    save_tmp = save    tmp_regs
 let restore_tmp = restore tmp_regs
@@ -38,8 +38,8 @@ let allocate_locals fdef =
   let alloc = Hashtbl.create (List.length fdef.locals + List.length fdef.params) in
   let fill_alloc name mem = match mem with
     | Linearscan.RegN  n -> Hashtbl.add alloc name (Reg var_regs.(n))
-    | Linearscan.Spill n -> Hashtbl.add alloc name (Stack (-4*n+2))
-  in Hashtbl.iter fill_alloc raw_alloc; (alloc, spill_count, r_max)
+    | Linearscan.Spill n -> Hashtbl.add alloc name (Stack (-4*(n+2)))
+  in Hashtbl.iter fill_alloc raw_alloc; (alloc, r_max, spill_count)
 
 (* Generate Mips code for an Imp function *)
 (* Call frame
@@ -55,7 +55,7 @@ let allocate_locals fdef =
 let tr_function fdef =
   (* Allocation info for local variables and function parameters *)
   (* explicit allocation table deduced from [allocate_locals] *)
-  let (alloc, spill_count, r_max) = allocate_locals fdef in
+  let alloc, spill_count, r_max = allocate_locals fdef in
   (* Generate Mips code for an Imp expression. The generated code produces the
      result in register $ti, and do not alter registers $tj with j < i. *)
   let rec tr_expr i e =
@@ -66,22 +66,27 @@ let tr_function fdef =
     match e with
     | Cst(n)  -> li ti n
     | Bool(b) -> if b then li ti 1 else li ti 0
-    | Var(x) -> Printf.printf "searching for Var(%s)" x;
+    | Var(x) ->
       (* take into account explicit allocation info *)
       (match Hashtbl.find_opt alloc x with
-       | Some expl_alloc -> begin match expl_alloc with
-          | Reg reg -> move ti reg
-          | Stack s -> lw ti s(fp)
-        end
-       | None -> Printf.printf "Var(x) not found, must be global"; la ti x @@ lw ti 0(ti)) (* non-local assumed to be a valid global *)
+       | Some (Reg reg) -> move ti reg
+       | Some (Stack s) -> lw ti s fp
+       | None ->
+        la ti x @@ lw ti 0(ti)) (* non-local assumed to be a valid global *)
     | Binop(bop, e1, e2) ->
        let op = match bop with
          | Add -> add
          | Mul -> mul
          | Lt  -> slt
        in
-       if i+1 >= nb_tmp_regs then raise (Error "not enough temporary registers");
-       tr_expr i e1 @@ tr_expr (i+1) e2 @@ op ti ti tmp_regs.(i+1)
+       if i+1 >= nb_tmp_regs-1 then
+        tr_expr i e1 @@ tr_expr (i+1) e2 @@ op ti ti tmp_regs.(i+1)
+       else
+        tr_expr i e1
+          @@ push tmp_regs.(i)
+          @@ tr_expr i e2
+          @@ pop tmp_regs.(i+1)
+          @@ op tmp_regs.(i) tmp_regs.(i) tmp_regs.(i+1)
 
     (* Function call.
        Evaluate the arguments and push their values onto the stack.
@@ -96,7 +101,6 @@ let tr_function fdef =
   and tr_params i = function
     | []        -> nop
     | e::params -> tr_params i params @@ tr_expr i e @@ push tmp_regs.(i)
-
   in
 
   (* Generate new labels for jumps *)
@@ -112,15 +116,12 @@ let tr_function fdef =
     | i::s -> tr_instr i @@ tr_seq s
 
   and tr_instr = function
-    | Putchar(e) -> Printf.printf "translating putchar"; tr_expr 0 e @@ move a0 t0 @@ li v0 11 @@ syscall
+    | Putchar(e) -> tr_expr 0 e @@ move a0 t0 @@ li v0 11 @@ syscall
     | Set(x, e) ->
-      Printf.printf "translating Set: %s" x;
       (* take into account explicit allocation info *)
       let set_code = match Hashtbl.find_opt alloc x with
-       | Some expl_alloc -> begin match expl_alloc with
-         | Reg reg -> move t0 reg
-         | Stack s -> lw t0 s(fp)
-      end
+       | Some (Reg reg) -> move reg t0
+       | Some (Stack s) -> sw t0 s(fp)
        | None -> la t1 x @@ sw t0 0(t1)
        in
        tr_expr 0 e @@ set_code
@@ -145,7 +146,16 @@ let tr_function fdef =
 
     (* Return from a call with a value. Includes cleaning the stack. *)
     | Return(e) -> tr_expr 0 e @@ addi sp fp (-4) @@ pop ra @@ pop fp @@ jr ra
-    | Expr(e) -> Printf.printf "translating expr"; tr_expr 0 e
+    | Expr(e) -> tr_expr 0 e
+  in
+  let restore_params params = List.fold_left
+    (fun (code, acc) var ->
+      (match Hashtbl.find_opt alloc var with
+        | Some (Reg reg) -> lw reg (4 * acc) fp
+        | Some (Stack s) -> lw t0 (4 * acc) fp @@ sw t0 s fp
+        | None -> failwith "Param not found while restoring parameters")
+        @@ code, acc+1)
+    (nop, 1) params
   in
   (* Mips code for the function itself. 
      Initialize the stack frame and save callee-saved registers, run the code of 
@@ -153,11 +163,14 @@ let tr_function fdef =
      dummy value if no explicit return met. *)
   push fp @@ push ra @@ addi fp sp 4
   (* save callee-saved registers and allocate the right number of slots on the stack for spilled local variables *)
-  @@ save_tmp (Array.length tmp_regs)
-  @@ addi sp sp (-4 * (List.length fdef.locals+List.length fdef.params - Array.length var_regs))
+  @@ save var_regs r_max
+  @@ addi sp sp (-4 * spill_count)
+  (* restore parameters *)
+  @@ fst (restore_params fdef.params)
   @@ tr_seq fdef.code
   (* restore callee-saved registers *)
-  @@ restore_tmp (Array.length tmp_regs)
+  @@ addi sp sp (4 * spill_count)
+  @@ restore var_regs r_max
   @@ addi sp fp (-4) 
   @@ pop ra @@ pop fp @@ li t0 0 @@ jr ra
 

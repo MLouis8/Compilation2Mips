@@ -17,7 +17,7 @@
 %token <string> IDENT
 %token TYP_INT TYP_BOOL TYP_VOID
 %token VAR FUNCTION
-%token ATTRIBUTE METHOD EXTENDS CLASS THIS SUPER INSTANCEOF
+%token ATTRIBUTE METHOD EXTENDS CLASS THIS SUPER INSTANCEOF CAST
 %token DOT NEW LBRACKET RBRACKET
 %token LPAR RPAR BEGIN END COMMA SEMI
 %token PUTCHAR SET IF ELSE WHILE RETURN
@@ -126,6 +126,7 @@ expression:
 | THIS { mk_expr () (This) }
 | SUPER { mk_expr () (Super) }
 | obj=expression INSTANCEOF c=IDENT { mk_expr () (Instanceof(obj, c))}
+| CAST obj=expression c=IDENT { mk_expr () (Cast(obj, c))}
 ;
 
 %inline binop:

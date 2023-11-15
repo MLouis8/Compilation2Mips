@@ -393,7 +393,6 @@ inheritance is already present.
   to select the right method)
   (warning: static overloading + inheritance and implicit up-cast produce a
   few corner cases where a call might become ambiguous; you may ignore this
-  at first)
 
 - allow the definition of abstract classes, which abstract methods
   (reminder: one cannot create an instance of such a class with [new];

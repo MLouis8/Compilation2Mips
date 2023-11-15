@@ -26,6 +26,7 @@
         "void",     TYP_VOID;
         "super",    SUPER;
         "instanceof", INSTANCEOF;
+        "cast", CAST;
       ] ;
     fun s ->
       try  Hashtbl.find h s

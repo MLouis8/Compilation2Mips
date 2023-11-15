@@ -1,0 +1,52 @@
+class date {
+  attribute int jours;
+  attribute int mois;
+  attribute int annee;
+
+  method void constructor(int jours, int mois, int annee) {
+    this.jours = jours;
+    this.mois = mois;
+    this.annee = annee;
+  }
+  method void affiche_jours() {
+    putchar(this.jours+48);
+  }
+}
+
+class point {
+  attribute int x;
+  attribute int y;
+  method void constructor(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+  method int sum(int x) {
+    return (x+this.x+this.y);
+  }
+}
+
+class point3D extends point {
+    attribute int z;
+    method void constructor(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    method int sum(int x) {
+        return (x+this.x+this.y+this.z);
+    }
+}
+
+function void main() {
+  var point3D p1;
+  var point p2;
+  var point3D p3;
+
+  p1 = new point3D(-1, 4, 6);
+  p2 = cast p1 point;
+  putchar(p2.sum(48)); // prints 3 NOT 9
+  p3 = cast p2 point3D;
+  putchar(p3.sum(48)); // prints 3
+  p3.z = 5;
+  putchar(p3.sum(48)); // prints 8
+}

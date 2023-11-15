@@ -1,0 +1,48 @@
+class date {
+  attribute int jours;
+  attribute int mois;
+  attribute int annee;
+
+  method void constructor(int jours, int mois, int annee) {
+    this.jours = jours;
+    this.mois = mois;
+    this.annee = annee;
+  }
+  method void affiche_jours() {
+    putchar(this.jours+48);
+  }
+}
+
+class point {
+  attribute int x;
+  attribute int y;
+  method void constructor(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+  method int sum(int x) {
+    return (x+this.x+this.y);
+  }
+}
+
+class point3D extends point {
+    attribute int z;
+    method void constructor(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    method int sum(int x) {
+        return (x+this.x+this.y+this.z);
+    }
+}
+
+function void main() {
+  var point3D p1;
+  var date p2;
+  
+  p1 = new point3D(1, 2, -2);
+  p2 = cast p1 date;
+}
+
+// should return a type error

@@ -30,44 +30,56 @@ let lscan_alloc nb_regs fdef =
   let live_intervals = Liveness.liveness_intervals_from_liveness fdef in
   let alloc: (string, raw_alloc) Hashtbl.t = Hashtbl.create (List.length fdef.locals+List.length fdef.params) in
   let active = ref [] in
-  let free = ref (List.init nb_regs (fun i -> i)) in
+  let free_regs = ref (List.init nb_regs (fun i -> i)) in
+  let free_stack = ref [] in
   let r_max = ref (-1) in (* maximum index of used register *)
   let spill_count = ref 0 in (* number of spilled variables *)
   (* free registers allocated to intervals that stop before timestamp a,
+     update the free_stack table
      returns remaining intervals *)
   let rec expire a l =
     match l with
     | [] -> []
     | (var, _, upper) :: t when upper < a -> begin
       match Hashtbl.find alloc var with
-        | RegN r -> free := r :: !free; expire a t
-        | Spill _ -> failwith "Error: should be assigned to a register"
+        | RegN r -> free_regs := r :: !free_regs; expire a t
+        | Spill s ->
+          free_stack := s :: !free_stack;
+          spill_count := !spill_count - 1;
+          expire a t
     end
     | h :: t -> h :: expire a t
   in
   (* for each interval i, in sorted order *)
   List.iter (fun i ->
       let xi, li, hi = i in
-      Printf.printf "interval of: %s, li: %d; hi: %d\n" xi li hi;
+      (* Printf.printf "interval of: %s, li: %d; hi: %d\n" xi li hi; *)
       (* free registers that expire before the lower bound of i *)
       (* if there are available registers *)
         (* ... then allocate one *)
         (* otherwise, may replace an already used register if this can
            make this register available again earlier *)
       active := expire li live_intervals;
-      match !free with
-        | [] -> 
-          Hashtbl.add alloc xi (Spill !spill_count);
-          spill_count := !spill_count + 1
+      match !free_regs with
+        | [] -> begin
+          match !free_stack with
+            | [] ->
+              Hashtbl.add alloc xi (Spill !spill_count);
+              spill_count := !spill_count + 1
+            | h :: t ->
+              Hashtbl.add alloc xi (Spill h);
+              free_stack := t;
+              active := insert_active (xi, li, hi) !active;
+          end
         | h :: t ->
           Hashtbl.add alloc xi (RegN h);
-          free := t;
+          free_regs := t;
           active := insert_active (xi, li, hi) !active;
           r_max := if h > !r_max then h else !r_max
     ) (sort_intervals live_intervals);
-  Hashtbl.iter (fun x raw ->
+  (* Hashtbl.iter (fun x raw ->
     match raw with
       | RegN  n -> Printf.printf "Reg(%d) -> %s\n" n x
       | Spill n -> Printf.printf "Spill(%d) -> %s\n" n x
-  ) alloc;
+  ) alloc; *)
   alloc, !r_max, !spill_count

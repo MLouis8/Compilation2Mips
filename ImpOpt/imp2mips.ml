@@ -79,7 +79,7 @@ let tr_function fdef =
          | Mul -> mul
          | Lt  -> slt
        in
-       if i+1 >= nb_tmp_regs-1 then
+       if i+1 < nb_tmp_regs-1 then
         tr_expr i e1 @@ tr_expr (i+1) e2 @@ op ti ti tmp_regs.(i+1)
        else
         tr_expr i e1
@@ -97,7 +97,6 @@ let tr_function fdef =
        tr_params i params @@ save_tmp (i-1) 
        @@ jal f 
        @@ restore_tmp (i-1) @@ addi sp sp (4 * List.length params)
-
   and tr_params i = function
     | []        -> nop
     | e::params -> tr_params i params @@ tr_expr i e @@ push tmp_regs.(i)

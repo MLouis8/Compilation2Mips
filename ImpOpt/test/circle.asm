@@ -42,26 +42,14 @@ __main_1:
 	li $v0, 11
 	syscall
 	move $t0, $s1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	li $t1, 1
 	add $t0, $t0, $t1
 	move $s1, $t0
 __main_0:
 	move $t0, $s1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	move $t0, $s0
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	move $t1, $s0
+	li $t2, 1
+	add $t1, $t1, $t2
 	slt $t0, $t0, $t1
 	bnez $t0, __main_1
 	addi $sp, $sp, 4
@@ -90,35 +78,15 @@ affiche_ligne:
 	b __affiche_ligne_0
 __affiche_ligne_1:
 	move $t0, $s1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	move $t0, $s1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	move $t1, $s1
 	mul $t0, $t0, $t1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	move $t0, $s0
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	move $t0, $s0
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	mul $t0, $t0, $t1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	move $t1, $s0
+	move $t2, $s0
+	mul $t1, $t1, $t2
 	add $t0, $t0, $t1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	move $t0, $s2
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	move $t0, $s2
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	mul $t0, $t0, $t1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	move $t1, $s2
+	move $t2, $s2
+	mul $t1, $t1, $t2
 	slt $t0, $t0, $t1
 	bnez $t0, __affiche_ligne_2
 	li $t0, 35
@@ -138,26 +106,14 @@ __affiche_ligne_3:
 	li $v0, 11
 	syscall
 	move $t0, $s0
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	li $t1, 1
 	add $t0, $t0, $t1
 	move $s0, $t0
 __affiche_ligne_0:
 	move $t0, $s0
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	move $t0, $s2
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	li $t0, 1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
-	add $t0, $t0, $t1
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	move $t1, $s2
+	li $t2, 1
+	add $t1, $t1, $t2
 	slt $t0, $t0, $t1
 	bnez $t0, __affiche_ligne_1
 	addi $sp, $sp, 8

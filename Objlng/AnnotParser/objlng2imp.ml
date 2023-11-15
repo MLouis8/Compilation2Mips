@@ -61,10 +61,10 @@ let translate_program (p: typ program) =
     if cname = c
       then true
     else
-      let c_def = find_class (TClass c) p.classes in 
-      let inheritance = has_get_parent c_def p.classes in 
+      let c_def = find_class (TClass cname) p.classes in 
+      let inheritance = has_get_parent c_def p.classes in
       if fst inheritance
-        then is_instance_of obj (snd inheritance).name
+        then is_instance_of (TClass (snd inheritance).name) c
       else false
   in
   (* translate a function *)

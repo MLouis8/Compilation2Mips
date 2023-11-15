@@ -100,7 +100,7 @@ let type_program (p: 'a program): typ program =
       | Read(m)           -> let (t1, t2) = type_mem m in mk_expr t1 (Read(t2))
       | This              -> mk_expr (Env.find "_this" tenv) This
       | Super             -> mk_expr (Env.find "_super" tenv) Super
-      | Instanceof(obj, c)-> let _ = rtrv_class c in mk_expr TBool (Instanceof(type_expr e, c))
+      | Instanceof(obj, c)-> let _ = rtrv_class c in mk_expr TBool (Instanceof(type_expr obj, c))
     and type_mem: 'a mem -> typ * typ mem = function
       | Arr(e1, e2) -> 
         let t1 = type_expr e1 in begin

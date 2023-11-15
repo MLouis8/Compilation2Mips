@@ -380,7 +380,7 @@ inheritance is already present.
   and the missing attribute) Done
 
 - add an expression [obj instanceof C], that tests whether the object [obj]
-  is from a class [C'] that is a subclass of [C] (or [C] itself)
+  is from a class [C'] that is a subclass of [C] (or [C] itself) Done
 
 - allow casting an object [obj] of static type [C] to another static type [C']
   (reminder: casting toward a parent class is always possible, casting toward

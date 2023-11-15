@@ -1,0 +1,65 @@
+var point3D_descr;
+var point_descr_ptr;
+var point_descr;
+
+function point_descriptor() {
+  
+  point_descr = alloc(12);
+  *point_descr = 0;
+  *(point_descr + 4) = &point_constructor;
+  *(point_descr + 8) = &point_sum;
+}
+
+function point3D_descriptor() {
+  
+  point_descr_ptr = alloc(4);
+  *point_descr_ptr = point_descr;
+  point3D_descr = alloc(12);
+  *point3D_descr = point_descr;
+  *(point3D_descr + 4) = &point3D_constructor;
+  *(point3D_descr + 8) = &point3D_sum;
+}
+
+function point_constructor(this, x, y) {
+  
+  *(this + 4) = x;
+  *(this + 8) = y;
+}
+
+function point_sum(this, x) {
+  
+  return(((x + *(this + 4)) + *(this + 8)));
+}
+
+function point3D_constructor(this, super, x, y, z) {
+  
+  *(this + 4) = x;
+  *(this + 8) = y;
+  *(this + 12) = z;
+}
+
+function point3D_sum(this, super, x) {
+  
+  return((((x + *(this + 4)) + *(this + 8)) + *(this + 12)));
+}
+
+function main() {
+  var p;
+  
+  point_descriptor();
+  point3D_descriptor();
+  p = alloc(16);
+  *p = point3D_descr;
+  point3D_constructor(p, point_descr_ptr, 1, 2, 3);
+  if (true) {
+    if (true) {
+      putchar(49);
+    } else {
+      putchar(50);
+    }
+  } else {
+    putchar(51);
+  }
+}
+
+

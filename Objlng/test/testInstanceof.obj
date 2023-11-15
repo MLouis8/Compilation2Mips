@@ -1,0 +1,39 @@
+class point {
+  attribute int x;
+  attribute int y;
+  method void constructor(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+  method int sum(int x) {
+    return (x+this.x+this.y);
+  }
+}
+
+class point3D extends point {
+    attribute int z;
+    method void constructor(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    method int sum(int x) {
+        return (x+this.x+this.y+this.z);
+    }
+}
+
+function void main() {
+  var point3D p;
+  p = new point3D(1, 2, 3);
+  if (p instanceof "point") {
+    if (p instanceof "point3D") {
+        putchar(49); //prints '1'
+    } else {
+        putchar(50);
+    }
+  } else {
+    putchar(51);
+  }
+}
+
+// should print 1; if prints 2 or 3 then instanceof is wrong

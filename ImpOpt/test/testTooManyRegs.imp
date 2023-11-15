@@ -14,8 +14,14 @@ function main() {
     c1 = 1;
     a1 = 2;
     b1 = 4;
+    c2 = 18;
+    c3 = -5;
+    b2 = 7;
+    a2 = 3;
+    a3 = -3;
     a4 = 6;
     c4 = 8;
     b3 = -2;
+    b4 = 1;
     putchar(48 + a1 + b3 + c4); //prints 8
 }

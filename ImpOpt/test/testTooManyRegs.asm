@@ -31,12 +31,24 @@ main:
 	sw $t0, -12($fp)
 	li $t0, 4
 	move $s0, $t0
+	li $t0, 18
+	move $s4, $t0
+	li $t0, -5
+	move $s6, $t0
+	li $t0, 7
+	move $s2, $t0
+	li $t0, 3
+	move $s3, $t0
+	li $t0, -3
+	move $s5, $t0
 	li $t0, 6
 	sw $t0, -8($fp)
 	li $t0, 8
 	sw $t0, -16($fp)
 	li $t0, -2
 	sw $t0, -20($fp)
+	li $t0, 1
+	move $s7, $t0
 	li $t0, 48
 	subi $sp, $sp, 4
 	sw $t0, 0($sp)

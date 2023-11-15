@@ -50,23 +50,11 @@ main:
 	li $t0, 1
 	move $s7, $t0
 	li $t0, 48
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, -12($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	lw $t1, -12($fp)
 	add $t0, $t0, $t1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, -20($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	lw $t1, -20($fp)
 	add $t0, $t0, $t1
-	subi $sp, $sp, 4
-	sw $t0, 0($sp)
-	lw $t0, -16($fp)
-	lw $t1, 0($sp)
-	addi $sp, $sp, 4
+	lw $t1, -16($fp)
 	add $t0, $t0, $t1
 	move $a0, $t0
 	li $v0, 11

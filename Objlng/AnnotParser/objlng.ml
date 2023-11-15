@@ -96,6 +96,17 @@ let has_get_parent (cdef: 'a class_def) (classes: 'a class_def list): bool * 'a 
   | Some parent -> (true, find_class (TClass parent) classes)
   | None -> (false, cdef)
 
+let rec is_instance_of (obj: typ) (c: string) (classes: 'a class_def list) =
+  let cname = match obj with TClass c -> c | _ -> assert false in
+  if cname = c
+    then true
+  else
+    let c_def = find_class (TClass cname) classes in 
+    let inheritance = has_get_parent c_def classes in
+    if fst inheritance
+      then is_instance_of (TClass (snd inheritance).name) c classes
+    else false
+    
 (* Program as in IMP + types + user-defined  *)
 type 'a program = {
   globals:   (string * typ) list;

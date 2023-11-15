@@ -5,6 +5,13 @@ let tr_op: binop -> Imp.binop = function
   | Mul -> Mul
   | Lt  -> Lt
 
+let default_value: typ -> Imp.expression = function
+  | TInt -> Cst 0
+  | TBool -> Bool true
+  | TClass n -> failwith "not supported yet"
+  | TArray t -> Alloc(Cst 4)
+  | _ -> assert false
+
 (* types for various environments *)
 module Env = Map.Make(String)
 
@@ -46,27 +53,6 @@ let translate_program (p: typ program) =
           failwith "method not found"
     in Deref(sub_method_offset metName cdef tr_e)
   in
-  let create_instance (cdef: typ class_def): Imp.expression =
-    let rec sum_fields_size (cdef: typ class_def): int =
-      let fields_size = List.fold_left (fun cpt field -> cpt + 4) 0 cdef.fields in
-      let inheritance = has_get_parent cdef p.classes in 
-      if fst inheritance then
-        fields_size + sum_fields_size (snd inheritance)
-      else
-        fields_size
-    in Alloc(Cst (4+sum_fields_size cdef))
-  in
-  let rec is_instance_of (obj: typ) (c: string) =
-    let cname = match obj with TClass c -> c | _ -> assert false in
-    if cname = c
-      then true
-    else
-      let c_def = find_class (TClass cname) p.classes in 
-      let inheritance = has_get_parent c_def p.classes in
-      if fst inheritance
-        then is_instance_of (TClass (snd inheritance).name) c
-      else false
-  in
   (* translate a function *)
   let tr_fdef (fdef: typ function_def): Imp.function_def = 
     let rec typ2byt: typ -> int = function
@@ -100,12 +86,34 @@ let translate_program (p: typ program) =
             | Some parent -> DCall(method_offset x2 clsse tr_e, tr_e_arg :: Var (parent^"_descr_ptr") :: List.map tr_expr l)
             | None -> DCall(method_offset x2 clsse tr_e, tr_e_arg :: List.map tr_expr l)
           end
-      | Instanceof(obj, c) -> Bool(is_instance_of obj.annot c)
-      | Cast(obj, c) -> failwith "not implemented"
+      | Instanceof(obj, c) -> Bool(Objlng.is_instance_of obj.annot c p.classes)
       | _ -> failwith ("Expr not caught: "^expr_to_string te)
     and tr_mem: typ mem -> Imp.expression = function
       | Atr(e, x) -> Binop(Add, tr_expr e, field_offset x (find_class e.annot p.classes))
       | Arr(e1, e2) -> Imp.array_access (tr_expr e1) (tr_expr e2)
+    in
+    let create_instance (cdef: typ class_def): Imp.expression =
+      let rec sum_fields_size (cdef: typ class_def): int =
+        let fields_size = List.fold_left (fun cpt field -> cpt + 4) 0 cdef.fields in
+        let inheritance = has_get_parent cdef p.classes in 
+        if fst inheritance then
+          fields_size + sum_fields_size (snd inheritance)
+        else
+          fields_size
+      in Alloc(Cst (4+sum_fields_size cdef))
+    in
+    let new_class_creation x1 x2 args =
+      let cdef = find_class (TClass x2) p.classes in
+        let instance = create_instance cdef in
+        let this_super: Imp.expression list = match cdef.parent with
+          | Some parent -> Var x1 :: Var (parent^"_descr_ptr") :: []
+          | None -> Var x1 :: []
+        in 
+        Imp.Seq([
+          Imp.Set(x1, instance);
+          Write(Var x1, Var (x2^"_descr"));
+          Expr(Call(x2 ^ "_constructor", this_super @ args))
+        ])
     in
     (* translation of instructions *)
     let rec tr_seq s = List.map tr_instr s
@@ -116,17 +124,27 @@ let translate_program (p: typ program) =
       | Return e -> Return(tr_expr e)
       | Expr e -> Expr(tr_expr e)
       | Set(x1, e) -> begin match e.expr with
-        | New(x2, l) -> let cdef = find_class (TClass x2) p.classes in
-          let instance = create_instance cdef in
-          let this_super: Imp.expression list = match cdef.parent with
-            | Some parent -> Var x1 :: Var (parent^"_descr_ptr") :: []
-            | None -> Var x1 :: []
-          in 
-          Seq([
-            Imp.Set(x1, instance);
-            Write(Var x1, Var (x2^"_descr"));
-            Expr(Call(x2 ^ "_constructor", this_super @ List.map tr_expr l))
-          ])
+        | New(x2, l) -> new_class_creation x1 x2 (List.map tr_expr l)
+        | Cast(obj, c) ->
+          let cdefChild = find_class (TClass c) p.classes in
+          if is_instance_of obj.annot c p.classes then (* its an upcast *)
+            let args = List.fold_right (
+              fun (field, _) argsL ->
+                Imp.Deref(tr_mem (Atr(obj, field))) :: argsL
+              ) cdefChild.fields [] in
+            new_class_creation x1 c args
+          else (* its a downcast *)
+            let cdefParent = find_class obj.annot p.classes in 
+            let args =
+              List.fold_right (
+                fun (fieldP, _) argsL ->
+                  Imp.Deref(tr_mem (Atr(obj, fieldP))) :: argsL
+                ) cdefParent.fields [] @
+              List.fold_right (
+                fun (_, t) argsL ->
+                  default_value t :: argsL                    
+                ) cdefChild.fields []
+            in new_class_creation x1 c args
         | Call(x2, l) -> Set(x1, Call(x2, List.map tr_expr l))
         | MCall(e2, x2, l) ->
           let tr_e = tr_expr e2 in

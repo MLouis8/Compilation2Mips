@@ -1,0 +1,90 @@
+var point3D_descr;
+var point_descr_ptr;
+var point_descr;
+var date_descr;
+
+function date_descriptor() {
+  
+  date_descr = alloc(12);
+  *date_descr = 0;
+  *(date_descr + 4) = &date_constructor;
+  *(date_descr + 8) = &date_affiche_jours;
+}
+
+function point_descriptor() {
+  
+  point_descr = alloc(12);
+  *point_descr = 0;
+  *(point_descr + 4) = &point_constructor;
+  *(point_descr + 8) = &point_sum;
+}
+
+function point3D_descriptor() {
+  
+  point_descr_ptr = alloc(4);
+  *point_descr_ptr = point_descr;
+  point3D_descr = alloc(12);
+  *point3D_descr = point_descr;
+  *(point3D_descr + 4) = &point3D_constructor;
+  *(point3D_descr + 8) = &point3D_sum;
+}
+
+function date_constructor(this, jours, mois, annee) {
+  
+  *(this + 4) = jours;
+  *(this + 8) = mois;
+  *(this + 12) = annee;
+}
+
+function date_affiche_jours(this) {
+  
+  putchar((*(this + 4) + 48));
+}
+
+function point_constructor(this, x, y) {
+  
+  *(this + 4) = x;
+  *(this + 8) = y;
+}
+
+function point_sum(this, x) {
+  
+  return(((x + *(this + 4)) + *(this + 8)));
+}
+
+function point3D_constructor(this, super, x, y, z) {
+  
+  *(this + 4) = x;
+  *(this + 8) = y;
+  *(this + 12) = z;
+}
+
+function point3D_sum(this, super, x) {
+  
+  return((((x + *(this + 4)) + *(this + 8)) + *(this + 12)));
+}
+
+function main() {
+  var p1;
+  var p2;
+  var p3;
+  
+  date_descriptor();
+  point_descriptor();
+  point3D_descriptor();
+  p1 = alloc(16);
+  *p1 = point3D_descr;
+  point3D_constructor(p1, point_descr_ptr, -1, 4, 6);
+  p2 = alloc(12);
+  *p2 = point_descr;
+  point_constructor(p2, *(p1 + 4), *(p1 + 8));
+  putchar(*(*p2 + 8)(p2, 48));
+  p3 = alloc(16);
+  *p3 = point3D_descr;
+  point3D_constructor(p3, point_descr_ptr, *(p2 + 4), *(p2 + 8), 0);
+  putchar(*(*p3 + 8)(p3, point_descr_ptr, 48));
+  *(p3 + 12) = 5;
+  putchar(*(*p3 + 8)(p3, point_descr_ptr, 48));
+}
+
+

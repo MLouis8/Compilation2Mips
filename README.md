@@ -10,8 +10,5 @@ What's implemented:
     - ex: 1 + 3 * b * 2 + 4 -> 5 + b * 6
     - ex: 2 + x + x + 5 -> 7 + x + x
 - Asimp work
-- Annoted basic Objlng
-
-What I plan to implement:
-- Add Objlng options, more tests
-- Optimization
+- Annoted Objlng up to the casting extension
+- Linearscan + extensions A and B

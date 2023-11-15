@@ -385,7 +385,7 @@ inheritance is already present.
 - allow casting an object [obj] of static type [C] to another static type [C']
   (reminder: casting toward a parent class is always possible, casting toward
   a child class requires a runtime check, and casting toward an unrelated class
-  is not allowed)
+  is not allowed) Done
 
 - allow static overloading of methods
   (for each method, build a new name based on the method name and the types

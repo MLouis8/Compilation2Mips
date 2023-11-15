@@ -177,7 +177,7 @@ You may implement any of these suggested extensions, or add your own.
 
 A. The current version of [imp2mips] fails when compiling an expression that
    requires more registers than the 10 temporaries available.
-   Extension: add a mechanism to use the stack instead.
+   Extension: add a mechanism to use the stack instead. Done
 
 B. In the simplest version of the allocator, each spilled variable is given a
    separate slot on the stack. 

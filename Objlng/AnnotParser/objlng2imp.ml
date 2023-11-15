@@ -55,7 +55,18 @@ let translate_program (p: typ program) =
       else
         fields_size
     in Alloc(Cst (4+sum_fields_size cdef))
-  in      
+  in
+  let rec is_instance_of (obj: typ) (c: string) =
+    let cname = match obj with TClass c -> c | _ -> assert false in
+    if cname = c
+      then true
+    else
+      let c_def = find_class (TClass c) p.classes in 
+      let inheritance = has_get_parent c_def p.classes in 
+      if fst inheritance
+        then is_instance_of obj (snd inheritance).name
+      else false
+  in
   (* translate a function *)
   let tr_fdef (fdef: typ function_def): Imp.function_def = 
     let rec typ2byt: typ -> int = function
@@ -89,7 +100,7 @@ let translate_program (p: typ program) =
             | Some parent -> DCall(method_offset x2 clsse tr_e, tr_e_arg :: Var (parent^"_descr_ptr") :: List.map tr_expr l)
             | None -> DCall(method_offset x2 clsse tr_e, tr_e_arg :: List.map tr_expr l)
           end
-      | Instanceof(obj, c) -> failwith "not implemented"
+      | Instanceof(obj, c) -> Bool(is_instance_of obj.annot c)
       | _ -> failwith ("Expr not caught: "^expr_to_string te)
     and tr_mem: typ mem -> Imp.expression = function
       | Atr(e, x) -> Binop(Add, tr_expr e, field_offset x (find_class e.annot p.classes))
